@@ -1,0 +1,1221 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mapa do Manual de Contabilidade Pública Municipal</title>
+<style>
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --surface-2:#eef1f5; --text:#1b2330; --muted:#5b6574;
+  --border:#d8dde4; --accent:#1d4ed8; --match:#f59e0b; --warn-bg:#fff7e6; --warn-border:#f0c36d;
+  --b0:#1b2330; --b0-text:#ffffff;
+  --b1:#1d4ed8; --b2:#0f766e; --b3:#7e22ce; --b4:#c2410c; --b5:#be185d; --b6:#15803d; --b7:#a16207; --b8:#475569;
+  --tint:11%; --line-mix:100%;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1318; --surface:#171c23; --surface-2:#1f262f; --text:#e6e9ee; --muted:#9aa4b2;
+    --border:#2e3642; --accent:#7aa2ff; --match:#fbbf24; --warn-bg:#2a2214; --warn-border:#7a5d22;
+    --b0:#e6e9ee; --b0-text:#0f1318; --tint:20%; --line-mix:70%;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1318; --surface:#171c23; --surface-2:#1f262f; --text:#e6e9ee; --muted:#9aa4b2;
+  --border:#2e3642; --accent:#7aa2ff; --match:#fbbf24; --warn-bg:#2a2214; --warn-border:#7a5d22;
+  --b0:#e6e9ee; --b0-text:#0f1318; --tint:20%; --line-mix:70%;
+  color-scheme: dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  display:grid; grid-template-rows:auto 1fr; overflow:hidden;
+}
+header{
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+  padding:10px 16px; background:var(--surface); border-bottom:1px solid var(--border);
+}
+header h1{font-size:16px; margin:0; font-weight:700; letter-spacing:-.01em}
+header h1 small{display:block; font-weight:500; font-size:12px; color:var(--muted)}
+.tabs{display:flex; gap:4px; background:var(--surface-2); padding:3px; border-radius:9px}
+.tabs button{
+  border:0; background:transparent; color:var(--muted); font:inherit; font-size:13px; font-weight:600;
+  padding:6px 12px; border-radius:7px; cursor:pointer;
+}
+.tabs button[aria-selected="true"]{background:var(--surface); color:var(--text); box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.spacer{flex:1}
+.iconbtn{
+  border:1px solid var(--border); background:var(--surface); color:var(--text); font:inherit; font-size:13px;
+  padding:6px 10px; border-radius:8px; cursor:pointer; line-height:1;
+}
+.iconbtn:hover{background:var(--surface-2)}
+main{position:relative; min-height:0}
+.view{position:absolute; inset:0}
+.view[hidden]{display:none}
+
+/* ---------- mapa ---------- */
+#mapView{display:flex}
+#stage{position:relative; flex:1; min-width:0}
+#map{width:100%; height:100%; display:block; touch-action:none; cursor:grab; user-select:none}
+#map.dragging{cursor:grabbing}
+.toolbar{
+  position:absolute; top:12px; left:12px; right:12px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;
+  pointer-events:none;
+}
+.toolbar > *{pointer-events:auto}
+.search{
+  display:flex; align-items:center; gap:6px; background:var(--surface); border:1px solid var(--border);
+  border-radius:8px; padding:0 8px; min-width:0; flex:0 1 300px;
+}
+.search input{
+  border:0; outline:0; background:transparent; color:var(--text); font:inherit; font-size:13px;
+  padding:7px 0; width:100%; min-width:0;
+}
+.search span{font-size:12px; color:var(--muted); white-space:nowrap}
+.hint{
+  position:absolute; left:12px; bottom:12px; font-size:12px; color:var(--muted);
+  background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:6px 10px; max-width:calc(100% - 24px);
+}
+.link{fill:none; stroke-linecap:round}
+.node{cursor:pointer; outline:none}
+.node rect.box{transition:stroke-width .15s}
+.node text{pointer-events:none}
+.node:focus-visible rect.box{stroke:var(--accent); stroke-width:3}
+.node.sel rect.box{stroke:var(--accent); stroke-width:3}
+.node.match rect.box{stroke:var(--match); stroke-width:3}
+.node.match.sel rect.box{stroke:var(--accent)}
+.badge circle{stroke-width:1.5}
+.badge text{font-size:11px; font-weight:700}
+
+/* ---------- painel ---------- */
+#panel{
+  width:360px; max-width:40%; border-left:1px solid var(--border); background:var(--surface);
+  overflow:auto; padding:18px 18px 28px; display:flex; flex-direction:column; gap:12px;
+}
+#panel[hidden]{display:none}
+#panel .crumbs{font-size:12px; color:var(--muted); line-height:1.5}
+#panel h2{font-size:18px; margin:0; line-height:1.3}
+#panel .pg{
+  display:inline-block; font-size:12px; font-weight:600; padding:2px 8px; border-radius:999px;
+  background:var(--surface-2); color:var(--muted); align-self:flex-start;
+}
+#panel p{margin:0; font-size:14px; line-height:1.6}
+#panel ul{margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:6px}
+#panel li button{
+  width:100%; text-align:left; font:inherit; font-size:13px; color:var(--text);
+  background:var(--surface-2); border:1px solid transparent; border-radius:8px; padding:8px 10px; cursor:pointer;
+  border-left:3px solid var(--bc);
+}
+#panel li button:hover{border-color:var(--border); border-left-color:var(--bc)}
+#panel .sub{font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin-top:6px}
+#panel .close{align-self:flex-end}
+
+/* ---------- análise ---------- */
+#analysisView{overflow:auto}
+.doc{max-width:980px; margin:0 auto; padding:28px 16px 64px}
+.doc h2{font-size:22px; margin:32px 0 12px; letter-spacing:-.01em}
+.doc h2:first-child{margin-top:0}
+.doc h3{font-size:16px; margin:22px 0 8px}
+.doc p,.doc li{font-size:15px; line-height:1.65}
+.doc ul{padding-left:20px}
+.card{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px 18px}
+.meta{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px 24px; font-size:14px}
+.meta b{display:block; font-size:12px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em}
+.stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin:14px 0}
+.stat{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px}
+.stat .n{font-size:26px; font-weight:750; letter-spacing:-.02em}
+.stat .l{font-size:13px; color:var(--muted); margin-top:2px}
+.chapters{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px}
+.chap{background:var(--surface); border:1px solid var(--border); border-left:4px solid var(--bc); border-radius:10px; padding:14px 16px}
+.chap h4{margin:0 0 6px; font-size:15px}
+.chap .pp{font-size:12px; color:var(--muted); margin-bottom:6px}
+.chap p{font-size:14px; margin:0}
+.pillars{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px}
+.pillars .card h4{margin:0 0 6px; font-size:15px}
+.pillars .card p{font-size:14px; margin:0}
+.tbl{width:100%; border-collapse:collapse; font-size:14px; background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden}
+.tbl th,.tbl td{text-align:left; vertical-align:top; padding:10px 12px; border-bottom:1px solid var(--border); line-height:1.5}
+.tbl th{background:var(--surface-2); font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted)}
+.tbl tr:last-child td{border-bottom:0}
+.tblwrap{overflow-x:auto; border-radius:12px}
+.note{background:var(--warn-bg); border:1px solid var(--warn-border); border-radius:10px; padding:12px 14px; font-size:14px; line-height:1.55}
+.refcard{display:flex; flex-direction:column; gap:12px}
+.refcard .cite{margin:0; font-size:15px; line-height:1.6; user-select:all}
+.refactions{display:flex; flex-wrap:wrap; gap:8px; align-items:center}
+.refactions a.iconbtn{text-decoration:none; display:inline-block}
+.copymsg{font-size:13px; color:var(--muted)}
+.disclaimer{margin:0; font-size:13px !important; color:var(--muted); line-height:1.55}
+.hint .src{display:inline-block; margin-top:3px; font-size:11.5px}
+.ex{background:color-mix(in srgb, var(--bc) 8%, var(--surface)); border:1px solid color-mix(in srgb, var(--bc) 35%, var(--border)); border-radius:10px; padding:12px 14px; display:flex; flex-direction:column; gap:8px}
+.ex .exlabel{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted)}
+.ex p{font-size:13.5px !important; line-height:1.55 !important}
+.ex .entry{margin:0; font-family:ui-monospace,"Cascadia Mono",Consolas,monospace; font-size:12px; line-height:1.6; background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:8px 10px; white-space:pre-wrap; overflow-x:auto}
+.tag{display:inline-block; font-size:11px; font-weight:700; padding:2px 7px; border-radius:999px; background:var(--surface-2); color:var(--muted); white-space:nowrap}
+.tag.alta{background:#fde2e1; color:#9b1c1c}
+.tag.media{background:#fdf0d5; color:#8a5a00}
+.tag.baixa{background:#e3ecfb; color:#1e429f}
+:root[data-theme="dark"] .tag.alta{background:#3b1818; color:#fca5a5}
+:root[data-theme="dark"] .tag.media{background:#3a2c10; color:#fcd34d}
+:root[data-theme="dark"] .tag.baixa{background:#172544; color:#93b4fd}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .tag.alta{background:#3b1818; color:#fca5a5}
+  :root:not([data-theme="light"]) .tag.media{background:#3a2c10; color:#fcd34d}
+  :root:not([data-theme="light"]) .tag.baixa{background:#172544; color:#93b4fd}
+}
+
+@media (max-width:760px){
+  header{gap:10px}
+  header h1{font-size:14px; flex-basis:100%}
+  #mapView{flex-direction:column}
+  #panel{width:auto; max-width:none; max-height:48%; border-left:0; border-top:1px solid var(--border)}
+  .hint{display:none}
+  .search{flex:1 1 100%}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Manual Técnico de Contabilidade Pública Municipal
+    <small>Mapa mental e análise · CNM, 2026</small></h1>
+  <div class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-view="mapView">Mapa mental</button>
+    <button role="tab" aria-selected="false" data-view="analysisView">Análise do documento</button>
+  </div>
+  <div class="spacer"></div>
+  <button class="iconbtn" id="refBtn" title="Ver a referência do manual original">Fonte: CNM (2026)</button>
+  <button class="iconbtn" id="themeBtn" title="Alternar tema claro/escuro">◐ Tema</button>
+</header>
+
+<main>
+  <!-- ======================= MAPA ======================= -->
+  <section id="mapView" class="view" role="tabpanel">
+    <div id="stage">
+      <svg id="map" aria-label="Mapa mental do manual">
+        <g id="viewport"><g id="links"></g><g id="nodes"></g></g>
+      </svg>
+      <div class="toolbar">
+        <label class="search">
+          <span aria-hidden="true">⌕</span>
+          <input id="q" type="search" placeholder="Buscar tema (ex.: DDR, art. 42, Fundeb)" autocomplete="off">
+          <span id="qcount"></span>
+        </label>
+        <button class="iconbtn" id="btnExpand">Expandir tudo</button>
+        <button class="iconbtn" id="btnCollapse">Recolher</button>
+        <button class="iconbtn" id="btnFit">Centralizar</button>
+        <button class="iconbtn" id="btnZoomIn" aria-label="Aproximar">+</button>
+        <button class="iconbtn" id="btnZoomOut" aria-label="Afastar">−</button>
+      </div>
+      <div class="hint">Clique num tópico para expandir e ver detalhes · arraste para mover · role para zoom · Enter na busca salta entre resultados<br>
+        <span class="src">Fonte: CNM. <em>Manual Técnico de Contabilidade Pública Municipal</em>. Brasília: CNM, 2026. ISBN 978-85-8418-180-3.</span></div>
+    </div>
+    <aside id="panel" hidden aria-live="polite"></aside>
+  </section>
+
+  <!-- ======================= ANÁLISE ======================= -->
+  <section id="analysisView" class="view" role="tabpanel" hidden>
+    <div class="doc">
+      <h2 id="referencia">Referência do manual original</h2>
+      <div class="card refcard">
+        <p class="cite" id="citeText">MANUAL técnico de contabilidade pública municipal. Coordenação de Elisangela Santos Fernandes, Marcus Vinicius Cunha dos Santos e Sandoval Costa Neto. Brasília, DF: Confederação Nacional de Municípios – CNM, 2026. ISBN 978-85-8418-180-3. Disponível em: https://www.cnm.org.br.</p>
+        <div class="refactions">
+          <button class="iconbtn" id="copyCite">Copiar citação (ABNT)</button>
+          <a class="iconbtn" href="https://www.cnm.org.br" target="_blank" rel="noopener">Acessar o site da CNM ↗</a>
+          <span id="copyMsg" class="copymsg" aria-live="polite"></span>
+        </div>
+        <p class="disclaimer">Este mapa mental e a análise são material de estudo independente, elaborado a partir da leitura do manual. Não é uma publicação oficial da CNM. Os títulos, conceitos, quadros e páginas citados pertencem à obra original, cuja reprodução é permitida desde que citada a fonte e sem fins comerciais (Lei 9.610/1998). Para aplicação prática, consulte sempre o texto integral.</p>
+      </div>
+
+      <h2>Ficha do documento</h2>
+      <div class="card meta">
+        <div><b>Título</b>Manual Técnico de Contabilidade Pública Municipal</div>
+        <div><b>Editora / ano</b>Confederação Nacional de Municípios (CNM), Brasília, 2026</div>
+        <div><b>Coordenação</b>Elisangela S. Fernandes, Marcus Vinicius C. dos Santos e Sandoval Costa Neto</div>
+        <div><b>Autoria</b>Membros do CNCM (Conselho Nacional de Contabilidade Municipal)</div>
+        <div><b>ISBN</b>978-85-8418-180-3</div>
+        <div><b>Público</b>Prefeitos, gestores e equipes técnicas municipais, com foco em Municípios de pequeno porte</div>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><div class="n">6</div><div class="l">capítulos temáticos</div></div>
+        <div class="stat"><div class="n">≈ 300</div><div class="l">páginas + anexos</div></div>
+        <div class="stat"><div class="n">23</div><div class="l">anexos com modelos de Notas Explicativas</div></div>
+        <div class="stat"><div class="n">17</div><div class="l">itens no checklist de encerramento</div></div>
+        <div class="stat"><div class="n">5</div><div class="l">DCASP obrigatórias detalhadas</div></div>
+      </div>
+
+      <h2>Síntese</h2>
+      <p>O manual é um guia prático que percorre o <strong>ciclo contábil completo de um Município</strong>: começa na virada do exercício (abertura de saldos em 1º de janeiro), passa pela execução da receita e da despesa, pelo tratamento patrimonial dos ativos e das contingências, simula um ano inteiro de contabilização num Município fictício, detalha a elaboração das demonstrações contábeis e das Notas Explicativas e fecha com controle interno, auditoria e transparência.</p>
+      <p>O fio condutor é a <strong>integração entre os três enfoques da contabilidade pública</strong>, que o texto retoma em todos os capítulos. A mensagem central é que a contabilidade deixou de ser mera obrigação legal e passou a ter papel estratégico no planejamento, na tomada de decisão e na prestação de contas.</p>
+
+      <div class="pillars">
+        <div class="card" style="border-top:4px solid var(--b1)"><h4>Enfoque patrimonial</h4><p>Regime de competência; ativos, passivos, VPA e VPD (classes 1 a 4 do PCASP); depreciação, provisões e reavaliação.</p></div>
+        <div class="card" style="border-top:4px solid var(--b2)"><h4>Enfoque orçamentário</h4><p>Anualidade e regime de caixa da receita (art. 35 da Lei 4.320/1964); empenho → liquidação → pagamento; classes 5 e 6.</p></div>
+        <div class="card" style="border-top:4px solid var(--b4)"><h4>Enfoque fiscal</h4><p>LRF: metas, limites (pessoal, dívida, operações de crédito), art. 42, RREO/RGF, DDR por fonte de recursos.</p></div>
+      </div>
+
+      <h2>O que cada capítulo entrega</h2>
+      <div class="chapters">
+        <div class="chap" style="--bc:var(--b1)"><h4>1 · Abertura dos saldos iniciais</h4><div class="pp">p. 7–46</div><p>Checklists de virada do exercício (IPC 01 e IPC 03), estrutura do PCASP em 8 classes, o 5º nível para consolidação e os lançamentos-modelo de abertura patrimonial, orçamentária e de Restos a Pagar.</p></div>
+        <div class="chap" style="--bc:var(--b2)"><h4>2 · Execução orçamentária e financeira</h4><div class="pp">p. 47–90</div><p>Receita por categoria econômica e natureza, efeitos da Reforma Tributária (ISS → IBS), regimes de caixa e competência, estágios da despesa, Restos a Pagar à luz do art. 42 da LRF, PPA/LDO/LOA e RREO/RGF.</p></div>
+        <div class="chap" style="--bc:var(--b3)"><h4>3 · Ativo fixo e movimentações patrimoniais</h4><div class="pp">p. 91–124</div><p>Reconhecimento e baixa de imobilizado, depreciação, amortização e exaustão, reavaliação × ajuste a valor justo, teste de recuperabilidade, e provisões e contingências conforme a NBC TSP 03 (R1).</p></div>
+        <div class="chap" style="--bc:var(--b4)"><h4>4 · Caso simulado</h4><div class="pp">p. 125–174</div><p>Um ano inteiro em “São Benedito do Cerrado/BA”: calendário mensal de obrigações, fechamento em 10 etapas, DDR por fonte, apuração dos três resultados, checklist e verificação dos limites da LRF, de educação e de saúde.</p></div>
+        <div class="chap" style="--bc:var(--b5)"><h4>5 · Demonstrações e Notas Explicativas</h4><div class="pp">p. 175–268</div><p>Estrutura e análise do BO, BP, DVP, DFC e BF, com quocientes. É o capítulo mais extenso e trata as Notas Explicativas como instrumento de accountability (NBC TSP 11 (R1), CTSP 02).</p></div>
+        <div class="chap" style="--bc:var(--b6)"><h4>6 · Controle interno, auditoria e transparência</h4><div class="pp">p. 269–295</div><p>Controle interno (CF, art. 74) e externo, auditoria financeira (ISSAI 1200), de conformidade e operacional, com suas etapas; transparência ativa e passiva (LC 131/2009, LAI) e o PNTP.</p></div>
+      </div>
+
+      <h2>Pontos fortes</h2>
+      <ul>
+        <li><strong>Orientação prática:</strong> checklists com responsáveis, lançamentos contábeis com contas do PCASP, calendário mês a mês e a sequência de fechamento com a finalidade de cada etapa.</li>
+        <li><strong>Caso simulado integrado:</strong> mostra, num mesmo Município, como receita, despesa, ajustes patrimoniais, DDR e DCASP se conectam, e por que o resultado orçamentário difere do patrimonial.</li>
+        <li><strong>Atualização normativa:</strong> incorpora MCASP 11ª ed., PCASP 2026, NBC TSP 03 (R1), NBC TSP Estrutura Conceitual (R1) e a transição da Reforma Tributária (EC 132/2023).</li>
+        <li><strong>Visão de risco:</strong> irregularidades mais apontadas pelos Tribunais de Contas (RP sem lastro, cancelamentos para ajuste fiscal, divergência entre controles de fonte e bancos).</li>
+        <li><strong>Material pronto para uso:</strong> 23 anexos com modelos de redação e exemplos reais de Notas Explicativas para cada grupo do Balanço Patrimonial e das demais demonstrações.</li>
+      </ul>
+
+      <h2>Pontos de atenção identificados na leitura</h2>
+      <p>Ao cruzar o texto com a legislação e com o próprio manual, encontrei as divergências abaixo. Vale revisá-las antes de usar o material em treinamento ou como referência normativa.</p>
+      <div class="tblwrap">
+      <table class="tbl">
+        <thead><tr><th>Relevância</th><th>Onde</th><th>O que o manual diz</th><th>Observação</th></tr></thead>
+        <tbody>
+          <tr><td><span class="tag alta">Alta</span></td><td>4.5.4 (p. 172)</td><td>Base de cálculo do mínimo de 15% em saúde = Receita Corrente Líquida (RCL).</td><td>A LC 141/2012 (art. 7º) usa como base a receita de impostos municipais e as transferências constitucionais (arts. 156, 158 e 159, I, “b” e § 3º, da CF), e não a RCL. O próprio manual, parágrafos adiante, fala em “impostos e transferências constitucionais”.</td></tr>
+          <tr><td><span class="tag alta">Alta</span></td><td>4.5.3.1 (p. 172) × 4.3.15 (p. 160)</td><td>Fala em “60% (via Fundeb) na remuneração do magistério” num ponto e em “70% em remuneração de professores” em outro.</td><td>A regra vigente (Lei 14.113/2020, art. 26) é de, no mínimo, 70% para a remuneração dos profissionais da educação básica. Convém uniformizar.</td></tr>
+          <tr><td><span class="tag media">Média</span></td><td>2.1.1.2 (p. 52)</td><td>Atribui ao art. 12, § 2º, da LRF a vedação de usar receita de alienação de bens em despesas correntes.</td><td>Essa vedação está no art. 44 da LRF. O art. 12, § 2º, trata do limite das operações de crédito em relação às despesas de capital.</td></tr>
+          <tr><td><span class="tag media">Média</span></td><td>4.3.16 e 4.3.20 (p. 162–165)</td><td>Resultado patrimonial de R$ 1.000.000 no Quadro 24 e de R$ 1.001.000 na conclusão. Provisões de R$ 758.334 no quadro e de R$ 729.300 no texto. O texto diz que ajustes de R$ 1.330.900 “explicam” a diferença entre os resultados.</td><td>A diferença entre o resultado orçamentário (R$ 1.282.300) e o patrimonial (R$ 1.000.000) é de R$ 282.300. A conciliação precisa considerar também itens como a despesa de capital e a amortização da dívida, e os valores devem ser harmonizados.</td></tr>
+          <tr><td><span class="tag media">Média</span></td><td>2.3.1.1 (p. 78)</td><td>“A despesa total com pessoal não pode exceder 95% do limite legal.”</td><td>95% é o limite prudencial (art. 22, parágrafo único, da LRF), cuja superação gera vedações. O limite máximo é de 60% da RCL (54% Executivo e 6% Legislativo), como o próprio 4.4.1 informa.</td></tr>
+          <tr><td><span class="tag media">Média</span></td><td>4.5.2 e 4.5.3 (p. 171–172)</td><td>Lista a alimentação do educando entre as ações de MDE e diz que a merenda “conta em parte”.</td><td>A Lei 9.394/1996 (art. 71, IV) exclui de MDE os programas suplementares de alimentação. A merenda é custeada com outras fontes, como o Pnae.</td></tr>
+          <tr><td><span class="tag baixa">Baixa</span></td><td>2.1.1.3 (p. 52)</td><td>Cita o MCASP, “Parte II – Procedimentos Contábeis Orçamentários”.</td><td>No MCASP, os Procedimentos Contábeis Orçamentários são a Parte I. A Parte II trata dos Procedimentos Contábeis Patrimoniais.</td></tr>
+          <tr><td><span class="tag baixa">Baixa</span></td><td>2.3.2 (p. 81)</td><td>O trecho sugere periodicidade bimestral “para o RREO e para o RGF”.</td><td>O Quadro 7, logo a seguir, está correto: RREO bimestral; RGF quadrimestral, ou semestral por opção para Municípios com menos de 50 mil habitantes.</td></tr>
+          <tr><td><span class="tag baixa">Baixa</span></td><td>Cap. 3 (p. 91 e 109)</td><td>Cita a NBC TSP 37 (Ativo Imobilizado) na introdução e a NBC TSP 07 no item 3.2.2.</td><td>Convém uniformizar a referência à norma de imobilizado vigente.</td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <h3>Observações editoriais</h3>
+      <ul>
+        <li>A Carta do Presidente chama a obra de “Cartilha” e promete Siafic, Capag, Cauc, Ranking da STN e PNTP como ferramentas de governança. No corpo do texto, esses temas aparecem de forma pontual (Capag em 3.4.8.4, Cauc em 4.5.1.3, PNTP em 6.2, Siafic no calendário), sem seção própria.</li>
+        <li>A ficha catalográfica indica 245 p., mas o miolo passa de 300 páginas, sem contar os anexos.</li>
+        <li>O capítulo 6 tem grafias do português europeu (“registo”, “planeamento”, “monitorização”, “controlos”) e um resíduo de edição (“Parte inferior do formulário”, p. 276).</li>
+      </ul>
+
+      <h2>Sobre os exemplos práticos</h2>
+      <p>Cada um dos 141 tópicos do mapa tem um exemplo prático, exibido no painel lateral ao clicar no tópico. Os exemplos usam o Município fictício de <strong>São Benedito do Cerrado (BA)</strong>, o mesmo do caso simulado do capítulo 4. Quando existem no manual, os valores dele foram mantidos (RCL de R$ 18 mi, resultados de R$ 1.282.300 e R$ 1.000.000, DDR do convênio da creche, duodécimo de R$ 659.824). Os demais valores são ilustrativos e servem para estudo, não como dados reais.</p>
+      <p>Os lançamentos contábeis aparecem em bloco (linhas “D:” e “C:”). Onde o código exato da conta varia com a versão do PCASP, o exemplo cita a conta pelo nome. Antes de replicar um lançamento no sistema, confira o PCASP Estendido do exercício e as orientações do Tribunal de Contas local.</p>
+      <h3>Fontes complementares consultadas na web</h3>
+      <ul>
+        <li>Receita Federal. <a href="https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/programas-e-atividades/reforma-consumo/entenda" target="_blank" rel="noopener">Entenda a Reforma Tributária do Consumo</a> (cronograma de transição do IBS e da CBS).</li>
+        <li>CRCSP. <a href="https://online.crcsp.org.br/portal/noticias/noticia.asp?c=9044" target="_blank" rel="noopener">Reforma tributária: regras de transição para o IBS e a CBS</a>.</li>
+        <li>Tesouro Transparente. <a href="https://www.tesourotransparente.gov.br/temas/estados-e-municipios/capacidade-de-pagamento-capag" target="_blank" rel="noopener">Capacidade de Pagamento (Capag)</a>.</li>
+        <li>Tesouro Nacional. <a href="https://www.gov.br/tesouronacional/pt-br/noticias/ministerio-da-fazenda-altera-metodologia-para-calculo-da-analise-da-capacidade-de-pagamento-capag" target="_blank" rel="noopener">Ministério da Fazenda altera metodologia da Capag</a> (Portaria MF 1.583/2023).</li>
+      </ul>
+
+      <h2>Como usar o mapa</h2>
+      <p>Na aba <strong>Mapa mental</strong>, os capítulos se distribuem no sentido horário a partir do centro. Clique em qualquer tópico para expandir os subtópicos e abrir, no painel lateral, a descrição, a página de referência, o exemplo prático e os subtemas. A busca aceita termos sem acento (ex.: “deprecia”, “art 42”, “Siconfi”) e abre automaticamente os ramos onde há resultados.</p>
+      <p class="note">Conteúdo elaborado a partir do <em>Manual Técnico de Contabilidade Pública Municipal</em> (CNM, 2026). As páginas indicadas seguem a numeração impressa do manual. Referência completa no topo desta aba.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ============================================================
+   DADOS DO MAPA MENTAL
+   t = título · p = página · d = descrição · c = subtópicos
+   ============================================================ */
+const DATA = {
+ t:"Manual Técnico de Contabilidade Pública Municipal", p:"CNM · 2026",
+ d:"Guia da Confederação Nacional de Municípios para prefeitos, gestores e equipes técnicas. Reúne os conceitos contábeis, os instrumentos e relatórios de gestão fiscal, os indicadores a acompanhar e as ferramentas de governança. O fio condutor é a integração entre os enfoques patrimonial, orçamentário e fiscal da Contabilidade Aplicada ao Setor Público (CASP). Fonte: Confederação Nacional de Municípios (CNM), Brasília, 2026, ISBN 978-85-8418-180-3, disponível em www.cnm.org.br.",
+ c:[
+ /* ---------------- CAPÍTULO 1 ---------------- */
+ {t:"1 · Abertura dos saldos contábeis iniciais", p:"7–46",
+  d:"Integração patrimonial, orçamentária e fiscal na virada do exercício: encerramento em 31/12 e abertura em 1º/1, transferência de saldos e controle de Restos a Pagar, apoiados no PCASP e nas IPCs da STN. Lembra que cada Tribunal de Contas pode normatizar rotinas próprias de encerramento e abertura.",
+  c:[
+   {t:"Procedimentos recomendados (IPC 01)", p:"8–14",
+    d:"A IPC 01 padroniza a transferência de saldos e o controle de Restos a Pagar. Objetivos: comparabilidade, transparência, responsabilidade fiscal e qualidade da informação. O encerramento e a abertura corretos são necessários para apurar o resultado e gerar as demonstrações contábeis e fiscais.",
+    c:[
+     {t:"Checklist da virada do exercício", d:"(a) Preparação normativa: versão do MCASP/PCASP, orientação do TC e designação de responsáveis; (b) mapeamento das contas PCASP do ano anterior para o seguinte e parametrização das classes 5.3, 6.3, 2.x, 8.2 e 1/3; (c) conciliações prévias de RP com empenhos e retenções; (d) rotinas de liquidação, pagamento e cancelamento; (e) encerramento na ordem cancelados/pagos → inscritos → exercícios anteriores."},
+     {t:"Modelos de lançamentos de inscrição de RP", d:"Lançamentos de inscrição de RP não processados a liquidar, em liquidação e processados, nas contas de controle orçamentário 5.3.1.7 / 6.3.1.7 e 6.2.2.1.3.xx."},
+     {t:"Princípios nos três enfoques", p:"12", d:"Patrimonial: competência e prudência. Orçamentário: anualidade, universalidade, não compensação e a sequência empenho → liquidação → pagamento. Fiscal: metas, limites e responsabilização da LRF. Legalidade, continuidade, mensuração e transparência atravessam os três."},
+     {t:"Matriz de responsabilidades", d:"A contabilidade responde pelo reconhecimento patrimonial, provisões e notas; a execução orçamentária, por empenhos, liquidações e RP; a tesouraria, por conciliações e domicílios bancários; TI e fornecedores, pela parametrização; a direção, pela aprovação de políticas com impacto fiscal."}
+    ]},
+   {t:"Plano de Contas Aplicado ao Setor Público (PCASP)", p:"14–31",
+    d:"Instrumento de padronização instituído pela STN e detalhado no MCASP e na IPC 00. Nos Municípios, é ferramenta de gestão, transparência e accountability e atende a gestores, Tribunais de Contas, STN e sociedade.",
+    c:[
+     {t:"Estrutura hierárquica", d:"Classe (1º nível), grupo, subgrupo, título e subtítulo. Permite acompanhar a execução por fonte/destinação, segregar recursos vinculados (educação, saúde, Fundeb, convênios), consolidar as contas nacionais e enviar dados ao Siconfi."},
+     {t:"Classes 1–4 · Patrimoniais (NIP)", p:"15", d:"1 Ativo, 2 Passivo, 3 VPD (reconhecida, em regra, na liquidação) e 4 VPA (reconhecida no fato gerador). Alerta para a distorção comum de uma contabilidade excessivamente orçamentária."},
+     {t:"Classes 5–6 · Orçamentárias (NIO)", p:"16", d:"5 registra a aprovação do planejamento e do orçamento (LOA: receita prevista e despesa fixada); 6 registra a execução. São a base do RREO e do RGF."},
+     {t:"Classes 7–8 · Controle (NIC)", p:"17", d:"Controles devedores e credores: convênios, contratos, garantias. Os grupos 7.2 e 8.2.2 (destinação de recursos) precisam bater com Caixa e Equivalentes. A divergência entre esses controles e os saldos bancários é um problema recorrente; a recomendação é conciliar periodicamente."},
+     {t:"5º nível e consolidação", p:"18", d:"Identifica as transações entre entidades (intra-OFSS, inter-OFSS da União, Estado ou Município) para permitir as eliminações na consolidação das DCASP e do Balanço do Setor Público Nacional (BSPN)."},
+     {t:"Atributos da conta contábil", d:"Natureza da informação, natureza do saldo, indicador de superávit financeiro (F/P) e outros atributos, com reflexos diretos na apuração do superávit e nos demonstrativos."},
+     {t:"Contas de abertura aplicadas", d:"Abertura patrimonial (classes 1 e 2), orçamentária (5 e 6) e de controle (7 e 8); registro completo da LOA; convênios e recursos vinculados; controle da destinação; integração das dimensões. Aponta os Restos a Pagar como um dos principais focos de inconsistência."}
+    ]},
+   {t:"Procedimentos de abertura dos saldos", p:"31–45",
+    d:"Normas que orientam a abertura e os lançamentos-modelo em 1º de janeiro.",
+    c:[
+     {t:"IPC 03 · Encerramento de contas", d:"Rotina de encerramento das contas contábeis no PCASP, pré-requisito para uma abertura consistente."},
+     {t:"IPC 01 · Transferência de saldos e RP", d:"Transposição dos saldos e controle dos Restos a Pagar inscritos para o novo exercício."},
+     {t:"Abertura patrimonial", d:"Lançamentos de abertura dos saldos patrimoniais em 1º de janeiro."},
+     {t:"Abertura orçamentária", d:"Lançamentos de RP nas classes 5 e 6, da receita prevista e da despesa fixada (LOA)."}
+    ]},
+   {t:"Considerações finais", p:"45", d:"A integração disciplinada entre os três enfoques, com procedimentos padronizados, documentação e revisão técnica prévia, preserva o patrimônio e garante a veracidade dos demonstrativos."}
+  ]},
+
+ /* ---------------- CAPÍTULO 2 ---------------- */
+ {t:"2 · Execução orçamentária e financeira", p:"47–90",
+  d:"Receita e despesa públicas conforme as NBC TSP e o MCASP, Restos a Pagar e o art. 42 da LRF, instrumentos de planejamento e demonstrativos parciais (RREO e RGF).",
+  c:[
+   {t:"Receita pública municipal", p:"47–56",
+    d:"Do cenário atual à transição da Reforma Tributária. O art. 11 da LRF exige instituir, prever e arrecadar todos os tributos de competência do Ente, sob pena de perder transferências voluntárias (art. 25).",
+    c:[
+     {t:"Receitas correntes", p:"48", d:"Impostos (IPTU, ISSQN), taxas, contribuições (Cosip, RPPS), patrimoniais, agropecuárias, industriais, de serviços, transferências correntes (FPM, cota-parte do ICMS) e outras (multas, indenizações)."},
+     {t:"FPM e dependência municipal", p:"49–50", d:"Principal fonte da maioria dos Municípios: 22,5% do IR e do IPI, mais repasses adicionais (CF, art. 159), distribuídos por faixas populacionais do IBGE. Deve ser registrado pelo valor bruto, com o Fundeb como dedução de receita."},
+     {t:"Reforma Tributária (ISS → IBS)", p:"50", d:"O ISS será substituído pelo IBS, e a lógica passa da origem para o destino. O IPTU continua fora da Reforma e é a base da autonomia municipal. Recomendações: atualizar o cadastro imobiliário, dar eficiência à cobrança da dívida ativa (inclusive por protesto) e integrar os sistemas ao Comitê Gestor do IBS."},
+     {t:"Receitas de capital", p:"51", d:"Operações de crédito (ex.: Finisa), alienação de bens, amortização de empréstimos, transferências de capital e outras. Em geral têm caráter permutativo. A receita de alienação não pode financiar despesa corrente, salvo se destinada por lei à previdência."},
+     {t:"Natureza da receita · o “DNA” do recurso", p:"52", d:"Codificação de 8 dígitos (categoria, origem, espécie, desdobramentos, tipo), conforme a Portaria 163/2001, parcialmente substituída pela Portaria STN 710/2021. Garante a rastreabilidade no Siconfi e no Siope. Erro comum: registrar a receita pelo valor líquido."},
+     {t:"Regimes de caixa e de competência", p:"52–56", d:"Orçamentário: a receita pertence ao exercício em que é arrecadada (art. 35 da Lei 4.320/1964). Patrimonial: VPA no fato gerador (IPC 02), como o IPTU em 1º de janeiro. Distingue receita efetiva de não efetiva e lembra que o superávit financeiro e o cancelamento de RP não são receita orçamentária."}
+    ]},
+   {t:"Registro da despesa orçamentária", p:"56–76",
+    d:"Os estágios da despesa pela Lei 4.320/1964 como elemento central da gestão fiscal responsável.",
+    c:[
+     {t:"Empenho", d:"Reserva de dotação e primeiro estágio. Modalidades: ordinário, estimativo e global."},
+     {t:"Liquidação", d:"Verificação do direito do credor com base nos documentos comprobatórios (art. 63 da Lei 4.320/1964). Marca o reconhecimento da VPD."},
+     {t:"Pagamento", d:"Baixa do passivo e saída de caixa ou equivalentes."},
+     {t:"RP processados × não processados", d:"Processados: despesa liquidada e não paga, com alta exigibilidade e prioridade de pagamento. Não processados: empenhada e não liquidada; exigem análise da execução futura e não podem servir de ajuste artificial do orçamento."},
+     {t:"Art. 42 da LRF · final de mandato", p:"71–75", d:"Nos dois últimos quadrimestres do mandato, é vedado contrair obrigação que não possa ser paga dentro dele sem disponibilidade de caixa suficiente. A disponibilidade considera caixa, RP já inscritos, obrigações assumidas e vinculações de recursos."},
+     {t:"Irregularidades apontadas pelos TCs", p:"73", d:"RP sem disponibilidade financeira, cancelamento indevido para ajuste fiscal, RPNP mantidos sem execução, empenhos de fim de mandato sem previsão de pagamento e uso de RP para mascarar déficit. Consequências: rejeição de contas, multas e responsabilização pessoal."}
+    ]},
+   {t:"Controle orçamentário e financeiro", p:"76–90",
+    d:"Limites legais e o ciclo PPA, LDO e LOA sob a LRF.",
+    c:[
+     {t:"PPA", d:"Plano de médio prazo (4 anos), do 2º ano de um mandato ao 1º do seguinte, com foco em investimentos e programas continuados."},
+     {t:"LDO e Anexo de Riscos Fiscais", d:"Ampliada pelo art. 4º da LRF: metas fiscais, critérios de limitação de empenho, riscos fiscais e passivos contingentes (incluindo perdas com a implantação do IBS) e reserva de contingência."},
+     {t:"LOA", d:"Estima a receita e fixa a despesa (CF, art. 165, § 5º; LRF; Lei 4.320/1964). Desafios: orçamento engessado por vinculações, previsão de receita imprecisa, burocracia. Nos Municípios pequenos, faltam pessoal especializado e participação social."},
+     {t:"Demonstrativos parciais: RREO e RGF", p:"79–90", d:"RREO bimestral (receitas, despesas, resultados primário e nominal). RGF quadrimestral, ou semestral por opção para Municípios com menos de 50 mil habitantes (pessoal, dívida, operações de crédito, RP). Publicação em até 30 dias e envio ao TC e à STN. Traz um passo a passo e um exemplo de RREO."}
+    ]}
+  ]},
+
+ /* ---------------- CAPÍTULO 3 ---------------- */
+ {t:"3 · Ativo fixo e movimentações patrimoniais", p:"91–124",
+  d:"Ciclo de vida dos bens públicos (aquisição, mensuração, depreciação e baixa), reavaliação e valor justo, e o tratamento de provisões e contingências. Normas: MCASP, NBC TSP 08 (intangível), NBC TSP 37 e 07 (imobilizado), Lei 4.320/1964, LRF e Portaria STN 548/2015.",
+  c:[
+   {t:"Aquisição e baixa de bens", p:"91–94",
+    d:"O bem é reconhecido no imobilizado quando tem custo mensurável e potencial de serviço ou benefício econômico.",
+    c:[
+     {t:"Critérios de reconhecimento", d:"Durabilidade acima de 12 meses, controle individual, valor significativo e natureza permanente. Classificação da despesa: 3.3.90 para consumo e 4.4.90 para bem permanente."},
+     {t:"Registro e responsabilidade", d:"Cadastro completo do bem (modelo, placa, chassi, valor, data, estado). O setor de patrimônio cadastra, emplaca e destina; o setor que usa o bem responde por ele."},
+     {t:"Baixa", d:"Motivos: inservível, extravio, furto, doação ou leilão. No leilão, a baixa ocorre após a entrada do recurso, que deve financiar a reposição dos bens."}
+    ]},
+   {t:"Depreciação, amortização e exaustão", p:"94–101",
+    d:"Reconhecimento sistemático da perda de valor por uso, desgaste, obsolescência ou exploração, em convergência com as IPSAS.",
+    c:[
+     {t:"Depreciação", d:"Aplicável ao imobilizado tangível, registrada mês a mês após a aquisição."},
+     {t:"Amortização de intangíveis", d:"Intangível com vida útil definida é amortizado; com vida útil indefinida, não é amortizado e passa por teste de recuperabilidade. Trata também do goodwill (ágio por expectativa de rentabilidade futura)."},
+     {t:"Exaustão", d:"Aplicável a recursos naturais explorados."},
+     {t:"Vida útil e valor residual", d:"Parâmetros definidos pela entidade, com desafios de estimativa e impacto direto nas demonstrações."}
+    ]},
+   {t:"Reavaliação × ajuste a valor justo", p:"101–110",
+    d:"Mensuração inicial obrigatória pelo custo. Depois, modelo de custo ou de reavaliação, sempre com depreciação e, quando couber, redução ao valor recuperável.",
+    c:[
+     {t:"Reavaliação", d:"Atualização periódica, por laudo técnico, do imobilizado quando o valor contábil se afasta do valor justo. Tem efeito na reserva de reavaliação, inclusive quando o bem é negociado."},
+     {t:"Ajuste a valor justo", d:"Mais frequente e baseado em mercado ativo; aplica-se a ativos financeiros e a alguns patrimoniais. Alerta: não confundir com reavaliação."},
+     {t:"Teste de recuperabilidade", d:"Normas distintas para ativos geradores e não geradores de caixa."},
+     {t:"Efeitos nas demonstrações", p:"110", d:"Melhora a fidedignidade do patrimônio, a qualidade dos dados enviados ao Siconfi e a base de decisão. Erros geram questionamentos dos TCs. Para Municípios iniciantes: começar com critério, base técnica e segurança."}
+    ]},
+   {t:"Provisões e contingências", p:"111–124",
+    d:"Baseado na NBC TSP 03 (R1), publicada em 17/03/2026 e alinhada à IPSAS 19, e na NBC TSP Estrutura Conceitual (R1).",
+    c:[
+     {t:"Ativos e passivos contingentes", d:"Não são reconhecidos no BP. Ativo: divulgado se provável e reconhecido se praticamente certo. Passivo: divulgado se possível e provisionado se provável. A assimetria decorre do princípio da prudência. Cita a IPSAS 51 e a SRS 1 (clima)."},
+     {t:"Mensuração e valor presente", d:"A melhor estimativa, descontada a valor presente quando o efeito é relevante, considerando eventos futuros e alienação de ativos."},
+     {t:"Provisões: reconhecimento", d:"Obrigação presente decorrente de evento passado, saída de recursos provável e estimativa confiável."},
+     {t:"Passivos judiciais", p:"122", d:"Exigem atuação conjunta da Procuradoria-Geral do Município e da contabilidade para transformar litígios em estimativas confiáveis."},
+     {t:"Provisão matemática e atuarial", d:"Fora do escopo da NBC TSP 03: é tratada pela NBC TSP 15 (R1), de benefícios a empregados e RPPS."},
+     {t:"Risco em PPP", d:"Garantias ao parceiro privado e aos fundos garantidores começam como passivo contingente e viram provisão quando o aporte se torna provável."},
+     {t:"Condição financeira e Capag", p:"124", d:"Subestimar obrigações infla o PL e distorce a Capag (endividamento, poupança corrente e liquidez), calculada com base na MSC. A dimensão IV do Ranking da STN reflete essa qualidade."}
+    ]}
+  ]},
+
+ /* ---------------- CAPÍTULO 4 ---------------- */
+ {t:"4 · Caso simulado: contabilização anual", p:"125–174",
+  d:"Um exercício completo no Município fictício de São Benedito do Cerrado (BA): cerca de 12 mil habitantes, RCL de R$ 18 milhões, equipe contábil de três pessoas e Siafic. Segue o MCASP 11ª ed., o PCASP, a LRF, as NBC TSP e a Portaria STN 548/2015 (PIPCP).",
+  c:[
+   {t:"Receitas, despesas e variações", p:"126–133",
+    d:"Registro nas perspectivas orçamentária (arrecadação) e patrimonial (competência).",
+    c:[
+     {t:"Receitas", d:"Lançamentos orçamentários e patrimoniais da receita."},
+     {t:"Despesas", d:"Lançamentos em cada estágio, com reflexos nas classes 3, 5, 6 e 8."},
+     {t:"Variações quantitativas", d:"Alteram o patrimônio líquido (VPA e VPD)."},
+     {t:"Variações qualitativas", d:"Permutativas: alteram a composição do patrimônio sem afetar o PL."}
+    ]},
+   {t:"Calendário mês a mês", p:"133–146",
+    d:"Agenda anual em três colunas (orçamentário, patrimonial e fiscal). O descumprimento pode gerar encargos, bloqueio de transferências voluntárias e de operações de crédito, multas e até cassação.",
+    c:[
+     {t:"Obrigações fiscais mensais", d:"EFD-Reinf e eSocial até o dia 15; INSS e FGTS até o dia 20; Pasep até o dia 25; MIT, DCTFWeb e Matriz de Saldos Contábeis (MSC) até o fim do mês seguinte."},
+     {t:"Relatórios periódicos", d:"RREO a cada bimestre; RGF a cada quadrimestre ou semestre; Siope e Siops; cadastro da dívida no Sadipem."},
+     {t:"Rotinas patrimoniais recorrentes", d:"Dívida ativa e ajuste para perdas; depreciação, reavaliação e impairment; provisões de férias e 13º; estoques."},
+     {t:"Prazos complementares", p:"145", d:"Siafic: lançamentos mensais até o dia 25; RP do exercício anterior até 30/1; ajustes até 30/3. Audiências públicas em fevereiro, maio e setembro (LC 141/2012 e LRF, art. 48). Em geral, LDO até 15/4 e PPA e LOA até 31/8. Há ainda as prestações do Pnae e do Pnate."}
+    ]},
+   {t:"Fechamento do exercício", p:"146–165",
+    d:"A ordem importa: procedimentos fora de sequência propagam inconsistências. Sequência recomendada em 10 etapas.",
+    c:[
+     {t:"Sequência em 10 etapas", d:"1 Conciliação de saldos → 2 ajustes patrimoniais → 3 VPA × receita e VPD × despesa → 4 transferências financeiras (351 = 451) → 5 inscrição de RP → 6 Dívida Fundada → 7 DDR → 8 apuração dos resultados → 9 DCASP e Notas → 10 publicação e envio."},
+     {t:"VPA × receita e VPD × despesa", d:"Conferência mensal das diferenças. Distingue VPA sem natureza orçamentária e despesas que não geram VPD (itens de subtração)."},
+     {t:"Ajustes patrimoniais", d:"Depreciação do imobilizado, ajuste para perdas da dívida ativa e provisões de férias, 13º e encargos."},
+     {t:"Dívida Fundada", d:"Inscrição, atualização, movimentação e lançamentos."},
+     {t:"DDR por fonte de recursos", p:"158–161", d:"Ativo financeiro menos passivo financeiro, por fonte, resulta no superávit ou déficit financeiro. A conta 8.2.1.1.1 (DCR) deve espelhar o superávit, com diferença zero. Dívida Fundada e provisões ficam fora do passivo financeiro. O superávit viabiliza créditos adicionais (art. 43 da Lei 4.320/1964)."},
+     {t:"Déficit na DDR: providências", d:"Fonte vinculada: investigar a causa (gasto excessivo ou fonte registrada errada). Fonte livre: avaliar RP a cancelar. Fundeb (fonte 26000000): verificar os 70% em remuneração e a eventual restituição."},
+     {t:"Três resultados", p:"161", d:"Orçamentário (receita menos despesa: +R$ 1.282.300 no caso), financeiro (variação das disponibilidades) e patrimonial (VPA menos VPD: +R$ 1.000.000)."},
+     {t:"Checklist de encerramento", p:"164", d:"17 itens com responsáveis: conciliação bancária, VPA/VPD, 351 = 451, depreciação, dívida ativa, provisões, Dívida Fundada, RP, DDR, resultados, DCASP, Notas, limites da LRF, RREO e RGF no Siconfi, Portal da Transparência e prestação de contas ao TCE/TCM."}
+    ]},
+   {t:"LRF: conformidade fiscal", p:"165–168",
+    d:"Quatro pilares: planejamento, transparência, controle e responsabilização.",
+    c:[
+     {t:"Despesa com pessoal", d:"Máximo de 60% da RCL (54% Executivo e 6% Legislativo). A base inclui ativos, inativos, pensionistas, encargos e terceirização substitutiva (art. 18). Deduções: sentenças anteriores a maio de 2000 e inativos custeados pelo RPPS."},
+     {t:"RGF no Siconfi", d:"Anexo 1 (Demonstrativo da Despesa com Pessoal), preenchido via MSC ou formulário web. O sistema calcula a RCL e o percentual comprometido."},
+     {t:"Vedações", d:"É nulo o ato que aumente a despesa com pessoal sem observar os limites (art. 21). Em final de mandato, vale o art. 42."}
+    ]},
+   {t:"Alertas para a gestão", p:"168–174",
+    d:"Limites que mais geram sanções para os Municípios.",
+    c:[
+     {t:"Endividamento", d:"Dívida consolidada líquida até 120% da RCL (Resolução do Senado 40/2001). Registro no Siconfi (RGF, Anexo 2) e no Sadipem."},
+     {t:"Operações de crédito", d:"Até 16% da RCL por exercício e serviço da dívida até 11,5% da RCL (Resolução do Senado 43/2001). ARO vedada no último ano de mandato e quitada até 10/12. Regra de ouro. Exige regularidade no Cauc e consulta ao MDF e ao MIP."},
+     {t:"Educação: 25% em MDE", d:"O que entra e o que não entra em MDE (Lei 9.394/1996, art. 71), com o Fundeb e a remuneração dos profissionais. Monitoramento pelo Siope."},
+     {t:"Saúde: 15% em ASPS", d:"O que conta pela LC 141/2012 (atenção básica, vigilâncias, Samu, medicamentos) e o que não conta (saneamento geral, planos de saúde de servidores, recursos do SUS/FNS). Monitoramento pelo Siops."},
+     {t:"Restos a Pagar nos limites", d:"RPNP só contam para o mínimo com caixa em 31/12. O cancelamento de RP usado para cumprir o mínimo obriga a repor o valor."},
+     {t:"Consequências", d:"Bloqueio de transferências voluntárias, de operações de crédito e de garantias, e responsabilização pessoal do gestor."}
+    ]}
+  ]},
+
+ /* ---------------- CAPÍTULO 5 ---------------- */
+ {t:"5 · Demonstrações contábeis e Notas Explicativas", p:"175–268",
+  d:"Capítulo mais extenso do manual. Apresenta cada DCASP, sua estrutura e análise, e propõe um conjunto mínimo de Notas Explicativas com base nas NBC TSP, no CTSP 02 e no MCASP.",
+  c:[
+   {t:"Demonstrações Contábeis (DCASP)", p:"175–228",
+    d:"As cinco demonstrações obrigatórias nos Municípios, com estrutura, detalhamento e análise por quocientes.",
+    c:[
+     {t:"Balanço Orçamentário (BO)", p:"175", d:"Art. 102 da Lei 4.320/1964; LRF, arts. 48, 52 e 53. Confronta previsão inicial e dotação atualizada com a execução da receita e da despesa. É o termômetro da saúde orçamentária."},
+     {t:"Balanço Patrimonial (BP)", d:"Ativo, passivo e patrimônio líquido, circulantes e não circulantes, com o quadro do superávit/déficit financeiro."},
+     {t:"Demonstração das Variações Patrimoniais (DVP)", d:"VPA e VPD por natureza (impostos, transferências, pessoal, benefícios, custos) e resultado patrimonial (IPC 05)."},
+     {t:"Demonstração dos Fluxos de Caixa (DFC)", d:"Fluxos operacional, de investimento e de financiamento (IPC 08). Útil para avaliar a capacidade de gerar caixa."},
+     {t:"Balanço Financeiro (BF)", d:"Ingressos e dispêndios orçamentários e extraorçamentários, transferências financeiras e saldos de caixa (IPC 06)."}
+    ]},
+   {t:"Notas Explicativas", p:"228–268",
+    d:"Instrumento de transparência, evidenciação e accountability. Evitar tanto o excesso de informação irrelevante quanto a omissão do que é material.",
+    c:[
+     {t:"Definição e base legal", d:"NBC TSP 11 (R1), CTSP 02, MCASP e NBC TSP Estrutura Conceitual (R1)."},
+     {t:"Fundamentos da evidenciação", d:"Características qualitativas, materialidade e julgamento profissional. Não se confunde com análise horizontal ou vertical."},
+     {t:"Estrutura padronizada", p:"238", d:"Pelo item 129 da NBC TSP 11 (R1): contexto operacional, base de preparação, declaração de conformidade, eventos subsequentes, políticas contábeis, notas por demonstração e outras divulgações (contingências, compromissos). Usa referências cruzadas."},
+     {t:"Notas por demonstração", d:"BO; BF (resultado financeiro e transferências); BP (caixa, créditos, dívida ativa, estoques, imobilizado, intangível, passivos, PL, superávit); DVP; DFC; DMPL."},
+     {t:"Qualidade e consolidação", d:"Qualidade da informação e efeitos da consolidação das demonstrações nas notas."}
+    ]}
+  ]},
+
+ /* ---------------- CAPÍTULO 6 ---------------- */
+ {t:"6 · Controle interno, auditoria e transparência", p:"269–295",
+  d:"Os pilares de fiscalização, auditoria contábil, conformidade legal e prestação de contas, e a evolução dos Tribunais de Contas desde o Decreto 966-A/1890.",
+  c:[
+   {t:"Controle interno", p:"270–274",
+    d:"Obrigatório pela CF (art. 74) e pela LRF (art. 59). Deve ser concomitante, planejado e preventivo.",
+    c:[
+     {t:"Controle interno nos Municípios", d:"Controladoria-Geral do Município e controle próprio da Câmara. Dificuldades: falta de sede, equipe e orçamento, controles manuais e, sobretudo, falta de independência e de apoio da alta gestão."},
+     {t:"Governança, riscos e controles", d:"Três dimensões interdependentes, com referência ao modelo Coso. O auditor passa de agente punitivo a parceiro da gestão."},
+     {t:"Segregação de funções", d:"Exemplo de risco: um único servidor que cadastra, processa e autoriza a folha de pagamento."}
+    ]},
+   {t:"Controle externo e auditoria financeira", p:"274–280",
+    d:"Atuação dos Tribunais de Contas e da auditoria financeira como aliada do controle interno.",
+    c:[
+     {t:"Objetivo (ISSAI 1200)", d:"Obter segurança razoável de que as demonstrações estão livres de distorção material e conformes às normas."},
+     {t:"Situação nos TCs", d:"Ainda em implantação (MMD-TC da Atricon). Destaques: TCE/SE, TCE/MG, TCE/RS e TCE/PR."},
+     {t:"Etapas e relatório", d:"Abordagem baseada em riscos e materialidade, coleta de evidências, comunicação e opinião: sem ressalva, com ressalva, adversa ou abstenção."},
+     {t:"Boa prática: São Cristóvão", d:"Plano específico de auditoria financeira, avaliação na transposição de saldos, rotinas de verificação e monitoramento das correções."}
+    ]},
+   {t:"Tipos e processo de auditoria", p:"280–290",
+    d:"Auditoria contábil e conformidade legal no setor público.",
+    c:[
+     {t:"Tipos de auditoria", d:"Financeira, de conformidade (legalidade) e operacional (desempenho, economicidade)."},
+     {t:"Princípios e compliance", d:"Independência, objetividade, ceticismo profissional, papéis de trabalho e boas práticas de integridade (NBASP)."},
+     {t:"Etapas da auditoria", p:"286", d:"Planejamento (riscos e programa), execução (análise documental, procedimentos analíticos, tracing, vouching, reexecução), comunicação (com contraditório) e monitoramento (follow-up)."},
+     {t:"Desafios municipais", d:"Empenhos sem liquidação comprovada, crescimento atípico da folha, pouca capacitação, pouca interoperabilidade e resistência cultural."}
+    ]},
+   {t:"Transparência e prestação de contas", p:"290–295",
+    d:"Accountability fundada na CF, na LRF, na LC 131/2009 (tempo real) e na LAI (Lei 12.527/2011).",
+    c:[
+     {t:"Transparência ativa", d:"Divulgação espontânea de estrutura, receitas, despesas, licitações, contratos e programas."},
+     {t:"Transparência passiva", d:"Atendimento a pedidos do cidadão pelo SIC, de forma clara e tempestiva."},
+     {t:"Portal da Transparência", p:"293", d:"Receitas, despesas, licitações, contratos, convênios, remuneração, RREO e RGF, em linguagem clara e formato aberto. O descumprimento pode restringir transferências voluntárias."},
+     {t:"PNTP (Atricon e TCs)", d:"Programa Nacional de Transparência Pública: avalia acessibilidade, completude, atualidade e compreensibilidade dos portais."},
+     {t:"Integração e desafios", d:"Controle, auditoria e transparência atuando em conjunto (CF, arts. 70 e 74). Obstáculos: capacitação, tecnologia, cultura e interoperabilidade."}
+    ]}
+  ]},
+
+ /* ---------------- ANEXOS ---------------- */
+ {t:"Anexos · Modelos de Notas Explicativas", p:"após 300",
+  d:"23 anexos. Em geral, a versão “A” traz um modelo de redação com campos a preencher e a “B”, uma síntese com exemplos reais de Notas Explicativas de Entes com boa prática.",
+  c:[
+   {t:"Anexos 1–4 · Notas gerais", d:"Informações gerais e contexto operacional; base de preparação; declaração de conformidade com as NBC TSP; resumo das principais políticas contábeis."},
+   {t:"Anexos 5–8 · BO e BF", d:"Balanço Orçamentário; Balanço Financeiro, com resultado financeiro e transferências financeiras."},
+   {t:"Anexos 9–21 · Balanço Patrimonial", d:"Caixa e equivalentes; créditos tributários; empréstimos e financiamentos; dívida ativa tributária; depósitos restituíveis; estoques; ativos biológicos; propriedade para investimento; imobilizado; intangível; passivos; patrimônio líquido; quadro do superávit/déficit."},
+   {t:"Anexos 22–23 · DVP e DFC", d:"Notas da Demonstração das Variações Patrimoniais (com quocientes) e da Demonstração dos Fluxos de Caixa."}
+  ]},
+
+ /* ---------------- BASE NORMATIVA ---------------- */
+ {t:"Base normativa transversal", p:"296–300",
+  d:"Normas que sustentam todos os capítulos, conforme as referências do manual.",
+  c:[
+   {t:"Leis e Constituição", d:"CF/1988 (arts. 70, 74, 159, 165, 167), Lei 4.320/1964, LC 101/2000 (LRF), LC 131/2009, Lei 12.527/2011 (LAI), LC 141/2012, Lei 9.394/1996 e EC 132/2023 (Reforma Tributária)."},
+   {t:"STN · manuais e IPCs", d:"MCASP 11ª ed., PCASP e PCASP Estendido 2026, MDF, MIP, Portaria STN 548/2015 (PIPCP), Portaria STN 710/2021 e IPC 00 a 08 (plano de contas, créditos tributários, encerramento, superávit, DVP, BF, consolidação, DFC)."},
+   {t:"CFC · NBC TSP", d:"Estrutura Conceitual (R1), TSP 03 (R1) provisões, TSP 08 intangível, TSP 11 (R1) apresentação, TSP 12 (R1) fluxos de caixa, TSP 15 (R1) benefícios a empregados, TSP 17 (R1), TSP 37 imobilizado e CTSP 02."},
+   {t:"Senado Federal", d:"Resolução 40/2001 (limite da dívida consolidada) e Resolução 43/2001 (operações de crédito)."},
+   {t:"Controle e auditoria", d:"ISSAI 1200, NBASP 100 (IRB), MMD-TC (Atricon), Manual de Auditoria Financeira e Referencial de Governança do TCU e modelo Coso."},
+   {t:"Sistemas e ferramentas", d:"Siafic (Decreto 10.540/2020), Siconfi e MSC, Siope, Siops, Sadipem, Cauc, Capag, Ranking da STN e PNTP."}
+  ]}
+ ]
+};
+
+/* ============================================================
+   EXEMPLOS PRÁTICOS (um por tópico, chave = título do tópico)
+   Valores ilustrativos. O Município fictício "São Benedito do
+   Cerrado" (BA) é o mesmo do caso simulado do cap. 4 do manual.
+   Linhas iniciadas por "D:" ou "C:" são lançamentos contábeis.
+   ============================================================ */
+const EX = {
+"Manual Técnico de Contabilidade Pública Municipal":
+"A equipe de São Benedito do Cerrado (Município fictício do caso simulado: cerca de 12 mil habitantes e RCL de R$ 18 milhões) usa o manual ao longo do ano: o cap. 1 em janeiro para abrir os saldos, os caps. 2 e 3 na rotina, o cap. 4 como roteiro do fechamento, o cap. 5 para montar balanços e notas até março e o cap. 6 para organizar o controle interno e o portal da transparência.",
+
+/* ---- Capítulo 1 ---- */
+"1 · Abertura dos saldos contábeis iniciais":
+"Em 2 de janeiro, o contador confere se os saldos de 31/12 (ativo de R$ 25,4 mi e passivo de R$ 6,1 mi) reabriram iguais em 1º/1, se os R$ 850 mil de Restos a Pagar foram reabertos por credor e por fonte e se a LOA do novo ano foi carregada nas classes 5 e 6 antes do primeiro empenho.",
+"Procedimentos recomendados (IPC 01)":
+"O Município troca de sistema contábil em dezembro. Seguindo a IPC 01, uma portaria designa a servidora responsável pela virada, a transferência de saldos roda primeiro numa base de teste e o balancete de encerramento é comparado conta a conta com o de abertura. Só depois o novo exercício é liberado para empenhos.",
+"Checklist da virada do exercício":
+"Checklist montado em novembro: (a) baixar o PCASP 2026 e a síntese de alterações; (b) mapear no sistema cada conta extinta para a conta nova; (c) conciliar a relação de empenhos a pagar (R$ 850 mil) com o saldo das contas de RP; (d) anular empenhos estimativos que sobraram; (e) encerrar primeiro os RP pagos e cancelados e só depois transferir os inscritos para “exercícios anteriores”.",
+"Modelos de lançamentos de inscrição de RP":
+"Empenho de R$ 30.000 para gêneros da merenda, não liquidado em 31/12 (contas do próprio manual):\nD: 6.2.2.1.3.01.00 Crédito empenhado a liquidar\nC: 6.2.2.1.3.05.00 Empenhos a liquidar inscritos em RP não processados\nNo controle dos Restos a Pagar:\nD: 5.3.1.7.0.00.00 RP não processados – inscrição no exercício\nC: 6.3.1.7.1.00.00 RP não processados a liquidar – inscrição no exercício",
+"Princípios nos três enfoques":
+"Trator de R$ 400 mil entregue e liquidado em dezembro e pago em janeiro. Patrimonial: o bem entra no ativo em dezembro (competência). Orçamentário: a despesa pertence ao exercício do empenho (art. 35 da Lei 4.320/1964) e vira RP processado. Fiscal: se for o último ano do mandato, precisa haver caixa em 31/12 para cumprir o art. 42 da LRF.",
+"Matriz de responsabilidades":
+"Diferença de R$ 12 mil entre o extrato e o razão da conta do Fundeb. A tesouraria identifica tarifas bancárias não lançadas, a contabilidade registra a despesa, o controle interno registra a ocorrência e a TI corrige a importação automática de extratos. Cada etapa tem um responsável nomeado na matriz.",
+"Plano de Contas Aplicado ao Setor Público (PCASP)":
+"Um único empenho de material de limpeza gera registros nas três naturezas: patrimonial (estoque e, no consumo, VPD), orçamentária (crédito empenhado na classe 6) e de controle (disponibilidade comprometida por empenho na classe 8). Com o plano padronizado, o Siconfi soma esse gasto com o de todos os Municípios do país.",
+"Estrutura hierárquica":
+"Leitura de 1.1.1.1.1.00.00: 1 = Ativo (classe) · 1.1 = Ativo circulante (grupo) · 1.1.1 = Caixa e equivalentes de caixa (subgrupo) · 1.1.1.1 = Caixa e equivalentes em moeda nacional (título) · o 5º dígito (1) indica consolidação. Os dois últimos pares detalham itens e subitens, como cada conta bancária de movimento.",
+"Classes 1–4 · Patrimoniais (NIP)":
+"IPTU lançado em 1º/1 no valor de R$ 1,2 mi:\nD: Créditos tributários a receber (classe 1 – Ativo)\nC: VPA de impostos sobre o patrimônio (classe 4)\nFolha de janeiro, R$ 780 mil, liquidada:\nD: VPD de remuneração a pessoal (classe 3)\nC: Pessoal a pagar (classe 2 – Passivo)",
+"Classes 5–6 · Orçamentárias (NIO)":
+"Aprovação da LOA com receita de R$ 19 mi:\nD: 5.2.1.1.1 Previsão inicial da receita\nC: 6.2.1.1 Receita a realizar\nArrecadação de R$ 200 mil de ISS no mês:\nD: 6.2.1.1 Receita a realizar\nC: 6.2.1.2 Receita realizada",
+"Classes 7–8 · Controle (NIC)":
+"A assinatura de um convênio de R$ 400 mil com o Estado para uma creche é registrada nas classes 7 (débito) e 8 (crédito), sem afetar o patrimônio. Quando o dinheiro entra, a disponibilidade da fonte vinculada do convênio aumenta nos grupos 7.2 e 8.2. Na conciliação de dezembro, o saldo “a utilizar” dessa fonte deve ser igual ao saldo da conta bancária específica do convênio.",
+"5º nível e consolidação":
+"O duodécimo repassado à Câmara (R$ 659.824 no caso do manual) é transferência financeira intra-OFSS (5º nível = 2) e é eliminado na consolidação do Município. Já a contribuição patronal ao INSS usa o 5º nível 3 (inter-OFSS com a União): permanece no balanço do Município e é eliminada só no Balanço do Setor Público Nacional.",
+"Atributos da conta contábil":
+"A conta de bancos tem indicador de superávit “F” e entra no ativo financeiro do quadro do superávit; o imobilizado tem “P” (permanente). Se a conta de fornecedores de RP for parametrizada como “P” por engano, o passivo financeiro diminui, o superávit fica inflado e o Município pode abrir créditos adicionais sem lastro real.",
+"Contas de abertura aplicadas":
+"Erro comum: R$ 180 mil de RP não processados do convênio da creche são reabertos na fonte livre (recursos não vinculados de impostos). Resultado: a fonte do convênio mostra um superávit que não existe e a fonte livre, um déficit falso. A correção é reclassificar os empenhos para a fonte correta antes do primeiro pagamento.",
+"Procedimentos de abertura dos saldos":
+"Sequência usada em São Benedito do Cerrado: (1) encerrar 2025 conforme a IPC 03; (2) emitir o balancete final; (3) transpor os saldos pela IPC 01; (4) emitir o balancete de abertura e comparar; (5) carregar a LOA 2026; (6) conferir a disponibilidade por fonte de abertura com os extratos bancários.",
+"IPC 03 · Encerramento de contas":
+"Em 31/12, as VPA (R$ 17.718.824) e as VPD (R$ 16.718.824) são encerradas contra a conta de resultado do exercício, que leva o superávit patrimonial de R$ 1.000.000 ao patrimônio líquido. As contas de execução orçamentária são zeradas, exceto as que seguem como Restos a Pagar.",
+"IPC 01 · Transferência de saldos e RP":
+"Os R$ 180 mil de RP não processados inscritos em 2025 passam, em 1º/1/2026, das contas de “inscrição no exercício” para as de “exercícios anteriores”, mantendo o detalhamento por credor, número do empenho e fonte de recursos.",
+"Abertura patrimonial":
+"Balancete de 31/12/2025: caixa de R$ 3,2 mi, créditos a receber de R$ 1,9 mi, imobilizado líquido de R$ 20,3 mi, passivos de R$ 6,1 mi e PL de R$ 19,3 mi. Em 1º/1/2026 esses valores reabrem as contas das classes 1 e 2, e o total de débitos deve ser igual ao de créditos.",
+"Abertura orçamentária":
+"LOA 2026 com receita prevista e despesa fixada de R$ 19 mi:\nD: 5.2.1.1.1 Previsão inicial da receita\nC: 6.2.1.1 Receita a realizar\nD: 5.2.2.1.1 Dotação inicial\nC: 6.2.2.1.1 Crédito disponível\nOs RP de 2025 também são reabertos nas classes 5 e 6.",
+"Considerações finais":
+"Teste rápido de qualidade da virada: o balancete de 1º/1 bate com o de 31/12, a disponibilidade de abertura por fonte bate com os extratos e o RP reaberto bate com a relação de empenhos. Se as três conferências fecharem, a abertura foi bem feita.",
+
+/* ---- Capítulo 2 ---- */
+"2 · Execução orçamentária e financeira":
+"Um ano típico do caso simulado: arrecadar R$ 19,1 mi (FPM, ICMS, Fundeb, IPTU, ISS), empenhar R$ 17,8 mi, publicar seis RREO e dois ou três RGF e, se for último ano de mandato, respeitar o art. 42 da LRF a partir de maio.",
+"Receita pública municipal":
+"Art. 11 da LRF na prática: um Município que não cobra ISS porque “quase não tem prestadores” pode ter uma transferência voluntária negada. A solução é instituir o imposto em lei, prevê-lo na LOA e cadastrar os prestadores, mesmo que a arrecadação seja pequena.",
+"Receitas correntes":
+"No caso de São Benedito do Cerrado: IPTU de R$ 480 mil (impostos), taxa de coleta de lixo de R$ 60 mil (taxas), Cosip de R$ 150 mil (contribuições), rendimento de aplicação de R$ 90 mil (patrimonial), FPM de R$ 9,5 mi e cota-parte do ICMS de R$ 2,3 mi (transferências correntes) e multas de trânsito de R$ 30 mil (outras correntes).",
+"FPM e dependência municipal":
+"Parcela de FPM de R$ 900 mil. O banco credita um valor menor porque 20% (R$ 180 mil) vão para a formação do Fundeb e há retenção do Pasep. Registro correto: receita bruta de FPM de R$ 900 mil e dedução de R$ 180 mil para o Fundeb. Registrar só o valor líquido reduz indevidamente a base dos 25% da educação e da RCL.",
+"Reforma Tributária (ISS → IBS)":
+"Cronograma (EC 132/2023 e LC 214/2025): 2026 é ano de teste (CBS 0,9% e IBS 0,1%); em 2027 e 2028 o IBS segue em 0,1%; de 2029 a 2032 o ISS cai para 90%, 80%, 70% e 60% da alíquota; em 2033 o ISS é extinto. Exemplo: uma agência de turismo sediada no Município que vende pacotes para moradores de outras cidades hoje recolhe ISS aqui; com o IBS, o imposto vai para o Município do consumidor.",
+"Receitas de capital":
+"Leilão de três caminhões velhos arrecada R$ 150 mil (alienação de bens). O dinheiro pode comprar um caminhão novo, mas não pode pagar a folha (art. 44 da LRF). Outro exemplo: financiamento Finisa de R$ 2 mi para pavimentação (operação de crédito), que entra como receita e cria um passivo.",
+"Natureza da receita · o “DNA” do recurso":
+"No código do FPM, o 1º dígito indica receita corrente (categoria), o 2º transferências correntes (origem), o 3º transferências da União (espécie), os seguintes desdobram até o FPM e o último (tipo) separa principal, multas e juros e dívida ativa. Se o FPM for classificado como “outras transferências”, o Siope deixa de considerá-lo na base da educação.",
+"Regimes de caixa e de competência":
+"IPTU de R$ 1,2 mi lançado em 1º/1 gera VPA de R$ 1,2 mi em janeiro (competência). Em março o contribuinte paga R$ 400 mil: nesse mês há receita orçamentária de R$ 400 mil (caixa) e baixa do crédito a receber, sem nova VPA. Já um empréstimo de R$ 2 mi é receita orçamentária, mas não VPA (receita não efetiva, porque cria uma dívida).",
+"Registro da despesa orçamentária":
+"Compra de medicamentos de R$ 50 mil: empenho em 10/3 (reserva a dotação), liquidação em 25/3 depois que o farmacêutico atesta a nota fiscal e pagamento em 5/4 por transferência bancária.",
+"Empenho":
+"Ordinário: compra única de 200 cadeiras escolares por R$ 40 mil. Estimativo: energia elétrica do ano, estimada em R$ 360 mil, porque o valor exato só se conhece nas faturas. Global: contrato de coleta de lixo de R$ 600 mil por ano, com parcelas mensais conhecidas.",
+"Liquidação":
+"A empresa conclui a pavimentação da Rua A. O fiscal do contrato anexa o boletim de medição e a nota fiscal de R$ 180 mil e atesta o serviço (art. 63 da Lei 4.320/1964):\nD: Obras em andamento (Ativo imobilizado)\nC: Fornecedores a pagar\nNa classe 6, o crédito passa de “empenhado a liquidar” para “empenhado liquidado a pagar”.",
+"Pagamento":
+"Pagamento dos R$ 180 mil com retenção previdenciária de 11% (R$ 19.800), que será repassada ao INSS:\nD: Fornecedores a pagar – R$ 180.000\nC: Bancos – R$ 160.200\nC: Consignações e retenções a recolher – R$ 19.800",
+"RP processados × não processados":
+"Em 31/12: nota de combustível de R$ 35 mil entregue e atestada, mas não paga, vira RP processado. Contrato de reforma de escola empenhado em R$ 120 mil, sem nenhuma medição, vira RP não processado. Se a reforma for cancelada em junho, o RPNP pode ser cancelado; o RP processado não, porque é dívida reconhecida com um fornecedor que já entregou.",
+"Art. 42 da LRF · final de mandato":
+"Último ano de mandato. Em outubro, o prefeito quer empenhar R$ 500 mil de recapeamento com pagamento no ano seguinte. Em 31/12 a fonte livre terá R$ 1,2 mi em caixa, R$ 900 mil de RP já inscritos e R$ 100 mil de consignações: sobram R$ 200 mil. A nova despesa fica sem lastro de R$ 300 mil e viola o art. 42.",
+"Irregularidades apontadas pelos TCs":
+"Em dezembro, para “zerar” o déficit, o Município cancela R$ 400 mil de RP processados de fornecedores que já entregaram o serviço. No ano seguinte, os fornecedores continuam cobrando. O Tribunal de Contas trata o caso como ocultação de dívida e aponta irregularidade nas contas.",
+"Controle orçamentário e financeiro":
+"Encadeamento: o PPA 2026–2029 cria o programa “Pavimenta Cerrado”, com meta de 20 km; a LDO 2027 prioriza 5 km no ano e fixa a meta de resultado primário; a LOA 2027 reserva R$ 3 mi para a ação de pavimentação; o RREO de cada bimestre mostra quanto já foi executado.",
+"PPA":
+"Prefeito eleito em 2024 assume em 2025 e elabora o PPA 2026–2029, que vale até o 1º ano do sucessor. Programa “Saúde na Comunidade”: objetivo de ampliar a atenção básica, meta de duas novas UBS até 2029 e indicador de cobertura da Estratégia Saúde da Família de 70% para 90%.",
+"LDO e Anexo de Riscos Fiscais":
+"Anexo de Riscos Fiscais da LDO 2027: ação de professores estimada em R$ 800 mil (passivo contingente), com a providência “uso da reserva de contingência”; e risco de perda de R$ 400 mil de ISS na transição para o IBS, com a providência “limitação de empenho de despesas discricionárias”.",
+"LOA":
+"LOA 2027 de R$ 19,5 mi: orçamento fiscal de R$ 15 mi e orçamento da seguridade social (saúde, assistência e previdência) de R$ 4,5 mi, com reserva de contingência de 1% da RCL (R$ 180 mil), conforme a LDO.",
+"Demonstrativos parciais: RREO e RGF":
+"RREO do 1º bimestre (janeiro e fevereiro) publicado até 30/3. RGF do 1º quadrimestre (janeiro a abril) até 30/5. Município de 12 mil habitantes que optou pela periodicidade semestral publica o RGF do 1º semestre até 30/7 e o do 2º até 30/1 do ano seguinte.",
+
+/* ---- Capítulo 3 ---- */
+"3 · Ativo fixo e movimentações patrimoniais":
+"Ciclo de vida de uma ambulância: comprada por R$ 300 mil em 2021, vida útil de 10 anos, depreciada mês a mês, reavaliada por laudo em 2026 depois de reformada e leiloada como inservível em 2031.",
+"Aquisição e baixa de bens":
+"Compra de 10 computadores por R$ 50 mil: empenho em 4.4.90.52 (equipamentos e material permanente), tombamento com plaqueta de patrimônio e termo de responsabilidade assinado pela diretora da escola que recebeu os equipamentos.",
+"Critérios de reconhecimento":
+"Caneta de R$ 3 e toner de R$ 400 são material de consumo (3.3.90.30): o toner é caro, mas acaba em meses. Cadeira de R$ 250 é material permanente (4.4.90.52): dura anos e pode ser controlada individualmente. Pneu de caminhão é consumo, embora dure mais de um ano, porque se incorpora ao veículo como peça de reposição.",
+"Registro e responsabilidade":
+"Ficha do bem nº 2026/0154: caminhonete, placa ABC-1D23, chassi informado, valor de R$ 280 mil, adquirida em 12/3/2026, estado “nova”, lotada na Secretaria de Agricultura, com termo assinado pelo secretário. Se o veículo sumir, a responsabilidade é da Secretaria de Agricultura, e não do setor de patrimônio.",
+"Baixa":
+"Leilão de cinco motos inservíveis com valor contábil líquido de R$ 15 mil, arrematadas por R$ 26 mil. Depois do depósito, baixam-se o custo e a depreciação acumulada; os R$ 26 mil entram como receita de capital e o ganho de R$ 11 mil aparece como VPA de ganho na alienação.",
+"Depreciação, amortização e exaustão":
+"Numa mesma Prefeitura: depreciação da frota de veículos, amortização da licença do software de gestão e exaustão da cascalheira municipal usada para manter as estradas vicinais.",
+"Depreciação":
+"Retroescavadeira de R$ 500 mil, valor residual de 10% (R$ 50 mil) e vida útil de 10 anos. Depreciação linear: (500.000 − 50.000) ÷ 10 = R$ 45.000 por ano, ou R$ 3.750 por mês:\nD: VPD de depreciação\nC: (−) Depreciação acumulada – máquinas e equipamentos",
+"Amortização de intangíveis":
+"Licença de software por 5 anos, paga por R$ 120 mil: amortização de R$ 24 mil por ano (vida útil definida). Uma marca turística registrada pelo Município, sem prazo de uso: não é amortizada (vida indefinida), mas passa por teste de recuperabilidade todo ano.",
+"Exaustão":
+"Jazida de cascalho com 50.000 m³ estimados, adquirida por R$ 200 mil. Em 2026 foram extraídos 5.000 m³ (10% da reserva): exaustão de R$ 20 mil no ano.",
+"Vida útil e valor residual":
+"Tabela adotada por decreto municipal (exemplo): veículos leves com 10 anos e residual de 10%; computadores com 5 anos e 10%; mobiliário com 10 anos e 10%; edificações com 25 a 50 anos, conforme laudo. Terrenos não são depreciados.",
+"Reavaliação × ajuste a valor justo":
+"O prédio da Prefeitura, registrado por valor irrisório desde 1985, vale hoje R$ 2,5 mi segundo laudo de engenharia: é caso de reavaliação. Uma aplicação em fundo de renda fixa atualizada pela cota diária é caso de ajuste a valor justo.",
+"Reavaliação":
+"Laudo avalia a sede em R$ 2,5 mi e o valor contábil líquido é de R$ 60 mil. A diferença de R$ 2,44 mi aumenta o imóvel em contrapartida da reserva de reavaliação no patrimônio líquido. A partir daí, a depreciação é calculada sobre o novo valor e sobre a vida útil remanescente indicada no laudo.",
+"Ajuste a valor justo":
+"Ações de empresa listada em bolsa, recebidas em dação em pagamento de dívida ativa, registradas por R$ 100 mil e cotadas a R$ 92 mil em 31/12. O ajuste de R$ 8 mil é reconhecido de imediato, com base na cotação de mercado, sem necessidade de laudo.",
+"Teste de recuperabilidade":
+"Ativo não gerador de caixa: ginásio interditado depois de uma enchente, com 40% da estrutura inutilizada, tem o valor reduzido na proporção do potencial de serviço perdido. Ativo gerador de caixa: usina de asfalto que vende serviços a terceiros é avaliada pelo valor presente dos fluxos de caixa futuros.",
+"Efeitos nas demonstrações":
+"Depois de reavaliar os imóveis, o PL de São Benedito do Cerrado sobe de R$ 19,3 mi para R$ 24 mi, e a depreciação anual passa de R$ 156 mil para R$ 260 mil, reduzindo o resultado patrimonial dos anos seguintes. A nota explicativa informa a data do laudo, o avaliador e o método usado.",
+"Provisões e contingências":
+"Três processos contra o Município: (a) indenização por acidente com ambulância, perda provável, R$ 300 mil: provisão no passivo; (b) ação de servidores por adicional, perda possível, R$ 1,2 mi: somente nota explicativa; (c) ação de fornecedor com perda remota: nada a registrar nem divulgar.",
+"Ativos e passivos contingentes":
+"O Município processa a União pedindo diferenças de FPM de R$ 2 mi e venceu em 1ª instância: ativo contingente divulgado em nota (entrada provável), sem registro no balanço. Só com trânsito em julgado e valor definido (entrada praticamente certa) o direito é registrado no ativo.",
+"Mensuração e valor presente":
+"Acordo judicial para pagar R$ 600 mil em três parcelas anuais de R$ 200 mil. Com taxa de desconto de 10% ao ano, o valor presente é de cerca de R$ 497 mil (181,8 + 165,3 + 150,3 mil). A provisão é registrada por esse valor e atualizada a cada ano até a quitação.",
+"Provisões: reconhecimento":
+"Em dezembro, os servidores têm R$ 520 mil em férias vencidas e proporcionais. É uma obrigação presente (o serviço já foi prestado), a saída de recursos é provável e o valor é calculável pela folha:\nD: VPD de pessoal – férias\nC: Provisão para férias a pagar",
+"Passivos judiciais":
+"Rotina trimestral: a Procuradoria envia uma planilha com número do processo, objeto, valor estimado, probabilidade de perda (provável, possível ou remota) e fase processual. A contabilidade registra ou ajusta as provisões e atualiza a nota explicativa de contingências.",
+"Provisão matemática e atuarial":
+"O cálculo atuarial de 2026 do RPPS mostra provisão matemática de R$ 45 mi e ativos garantidores de R$ 30 mi, um déficit de R$ 15 mi. Esse passivo segue a NBC TSP 15 (R1). Já uma ação de um aposentado pedindo revisão do benefício é contingência e segue a NBC TSP 03 (R1).",
+"Risco em PPP":
+"PPP de iluminação pública com garantia de receita mínima: se a Cosip arrecadar menos de R$ 1 mi por ano, o Município cobre a diferença. Na assinatura, a garantia é passivo contingente em nota. Em 2027, com a Cosip projetada em R$ 850 mil, a cobertura de R$ 150 mil torna-se provável e é provisionada.",
+"Condição financeira e Capag":
+"A Capag (Portaria MF 1.583/2023) usa três indicadores: endividamento (dívida consolidada bruta ÷ RCL), poupança corrente (despesa corrente ÷ receita corrente ajustada) e liquidez relativa ((caixa bruto − obrigações financeiras) ÷ RCL). Se R$ 500 mil de RP processados forem omitidos, a liquidez parece melhor do que é. Corrigido o dado, a nota pode cair e o Município perde acesso a empréstimos com garantia da União, que exigem Capag A ou B.",
+
+/* ---- Capítulo 4 ---- */
+"4 · Caso simulado: contabilização anual":
+"São Benedito do Cerrado (BA): cerca de 12 mil habitantes, RCL de R$ 18 mi, três pessoas na contabilidade e Siafic. O caso percorre o ano inteiro e fecha com superávit orçamentário de R$ 1.282.300 e resultado patrimonial de R$ 1.000.000 (Quadros 23 e 24 do manual).",
+"Receitas, despesas e variações":
+"Janeiro: IPTU lançado (VPA de R$ 1,2 mi), FPM recebido, folha empenhada, liquidada e paga. Cada fato é classificado como variação quantitativa (altera o patrimônio líquido) ou qualitativa (só troca um elemento do patrimônio por outro).",
+"Receitas":
+"Recebimento de R$ 900 mil de FPM, registrado nas três naturezas:\nD: Bancos (Ativo)\nC: VPA de transferências intergovernamentais\nD: 6.2.1.1 Receita a realizar\nC: 6.2.1.2 Receita realizada\nNo controle da fonte livre, a disponibilidade de recursos aumenta nos grupos 7.2 e 8.2.",
+"Despesas":
+"Folha de janeiro, R$ 780 mil. No empenho, o crédito disponível passa a empenhado a liquidar e a disponibilidade da fonte passa de “a utilizar” para “comprometida por empenho”. Na liquidação:\nD: VPD de pessoal\nC: Pessoal a pagar\nNo pagamento:\nD: Pessoal a pagar\nC: Bancos\nE a disponibilidade da fonte passa a “utilizada”.",
+"Variações quantitativas":
+"Aumentativa: doação de um terreno de R$ 200 mil ao Município, que aumenta o patrimônio líquido. Diminutiva: depreciação de R$ 13 mil no mês, que reduz o patrimônio líquido sem saída de caixa.",
+"Variações qualitativas":
+"Compra à vista de um trator de R$ 400 mil: sai caixa e entra imobilizado, e o patrimônio líquido não muda, embora exista despesa orçamentária de capital. O mesmo vale para o recebimento de um IPTU já lançado: troca-se crédito a receber por caixa.",
+"Calendário mês a mês":
+"Março em São Benedito do Cerrado: dia 15, EFD-Reinf e eSocial; dia 20, INSS e FGTS; dia 25, Pasep e fechamento dos lançamentos de fevereiro no Siafic; até dia 30, RREO do 1º bimestre, MSC de fevereiro e ajustes finais das demonstrações do ano anterior.",
+"Obrigações fiscais mensais":
+"Folha de abril paga em 30/4: eSocial e EFD-Reinf até 15/5; guias de INSS e FGTS até 20/5; Pasep até 25/5; DCTFWeb e MSC de abril nos prazos do calendário do manual. Atrasos geram multa e juros e podem travar a certidão previdenciária exigida para convênios.",
+"Relatórios periódicos":
+"Bimestre de maio e junho: RREO até 30/7, com Siope e Siops do mesmo período. Quadrimestre de janeiro a abril: RGF até 30/5 (ou semestral, se o Município optou). Para contratar financiamento, a dívida precisa estar cadastrada no Sadipem antes do pedido.",
+"Rotinas patrimoniais recorrentes":
+"Todo mês: depreciação (R$ 13 mil), provisão de 1/12 de 13º e férias (cerca de R$ 63 mil), baixa do estoque de medicamentos distribuídos pela farmácia básica (R$ 25 mil) e atualização dos créditos inscritos em dívida ativa.",
+"Prazos complementares":
+"Em 2026: RP de 2025 inscritos no Siafic até 30/1; ajustes das demonstrações de 2025 até 30/3; audiências públicas de metas fiscais e da saúde na Câmara no fim de fevereiro, maio e setembro; LDO 2027 enviada até 15/4 e LOA 2027 até 31/8, ou nas datas da Lei Orgânica local.",
+"Fechamento do exercício":
+"Cronograma interno: até 15/12, conciliações; de 16 a 20/12, ajustes patrimoniais; de 21 a 31/12, VPA × receita, transferências financeiras e inscrição de RP; em janeiro, Dívida Fundada, disponibilidade por fonte e resultados; em fevereiro e março, demonstrações e notas.",
+"Sequência em 10 etapas":
+"Por que a ordem importa: se a depreciação de dezembro (etapa 2) for lançada depois da apuração dos resultados (etapa 8), o Balanço Patrimonial e a DVP ficam divergentes em R$ 13 mil, e será preciso refazer tudo a partir da etapa 8.",
+"VPA × receita e VPD × despesa":
+"VPA de impostos de R$ 1.486.000 contra receita orçamentária de impostos de R$ 1.410.000: a diferença de R$ 76 mil é IPTU lançado e não pago (VPA sem receita). No lado da despesa, a compra do trator (R$ 400 mil) é despesa sem VPD e a depreciação é VPD sem despesa. Diferença sem explicação indica erro de classificação.",
+"Ajustes patrimoniais":
+"Ajustes de dezembro no caso do manual: depreciação de R$ 156 mil; ajuste para perdas da dívida ativa de R$ 256.800, calculado pela média histórica de recebimento aplicada ao estoque; e provisões de férias, 13º e encargos.",
+"Dívida Fundada":
+"Financiamento Finisa: saldo inicial de R$ 2.000.000; (+) juros e atualização de R$ 189.600 (valor do caso); (−) amortizações pagas de R$ 300.000; saldo final de R$ 1.889.600, conferido com o extrato do banco e com o Anexo 2 do RGF.",
+"DDR por fonte de recursos":
+"Exemplo do manual (Quadro 19), fonte do convênio da creche: caixa de R$ 220 mil (−) RP não processados de R$ 180 mil = superávit de R$ 40 mil. A conta 8.2.1.1.1 (disponibilidade a utilizar) deve mostrar os mesmos R$ 40 mil, com diferença zero. Esse superávit pode abrir crédito adicional no ano seguinte para a mesma finalidade.",
+"Déficit na DDR: providências":
+"Fonte do Fundeb com déficit de R$ 60 mil. A análise mostra que uma folha de professores de R$ 60 mil saiu da conta do Fundeb, mas foi registrada na fonte livre. Corrige-se a fonte do pagamento. Se o déficit fosse real, a fonte livre cobriria a diferença e o fato seria explicado em nota.",
+"Três resultados":
+"Orçamentário: R$ 19.126.000 − R$ 17.843.700 = +R$ 1.282.300. Patrimonial: R$ 17.718.824 − R$ 16.718.824 = +R$ 1.000.000. Financeiro: variação do caixa, por exemplo de R$ 2,9 mi para R$ 3,2 mi (+R$ 300 mil, valor ilustrativo).",
+"Checklist de encerramento":
+"Uso prático: imprimir o quadro de 17 itens, marcar cada linha com data e responsável e anexar as evidências (extratos, planilha de conciliação, relatório por fonte) à prestação de contas. Item 4, por exemplo: transferências concedidas pela Prefeitura (R$ 659.824) iguais às recebidas pela Câmara (R$ 659.824).",
+"LRF: conformidade fiscal":
+"Com RCL de R$ 18 mi: limite máximo de pessoal do Executivo (54%) = R$ 9,72 mi; limite prudencial (95% do máximo) = R$ 9,234 mi; limite de alerta (90%) = R$ 8,748 mi; dívida consolidada líquida máxima (120%) = R$ 21,6 mi.",
+"Despesa com pessoal":
+"Executivo: ativos R$ 8,6 mi + inativos R$ 0,9 mi + encargos R$ 1,3 mi + terceirização substitutiva R$ 0,2 mi = R$ 11,0 mi. Deduções: inativos pagos pelo RPPS (R$ 0,9 mi) e indenizações por demissão (R$ 0,1 mi). Despesa líquida de R$ 10,0 mi = 55,6% da RCL, acima dos 54%. O excesso deve ser eliminado em dois quadrimestres, com pelo menos um terço no primeiro (art. 23).",
+"RGF no Siconfi":
+"O Anexo 1 do RGF do 3º quadrimestre é gerado a partir da MSC de dezembro. O contador confere se a despesa bruta bate com o razão das contas de pessoal e homologa o relatório, que é assinado pelo prefeito, pelo responsável pela administração financeira e pelo controle interno (art. 54 da LRF).",
+"Vedações":
+"Em setembro, com pessoal em 55% da RCL, o prefeito quer dar aumento a uma categoria. Acima do limite prudencial, a LRF veda aumentos, criação de cargos e horas extras (art. 22, parágrafo único), com exceção da revisão geral anual. Um ato feito sem observar os limites é nulo (art. 21).",
+"Alertas para a gestão":
+"Painel de limites do caso (valores ilustrativos): pessoal 51% da RCL (dentro do limite), dívida consolidada líquida 8,8%, educação 26,4%, saúde 18,2% e operações de crédito 5% no ano.",
+"Endividamento":
+"Dívida consolidada: Finisa de R$ 1,89 mi + parcelamento previdenciário de R$ 1,2 mi = R$ 3,09 mi. Deduções (caixa, descontados os RP processados): R$ 1,5 mi. DCL de R$ 1,59 mi = 8,8% da RCL, muito abaixo do limite de 120% (Resolução do Senado 40/2001).",
+"Operações de crédito":
+"Pedido de financiamento de R$ 2,5 mi para máquinas: 13,9% da RCL (limite anual de 16%). Serviço da dívida previsto de R$ 700 mil por ano = 3,9% da RCL (limite de 11,5%). O pedido segue pelo Sadipem e exige regularidade no Cauc; se houver garantia da União, também Capag A ou B.",
+"Educação: 25% em MDE":
+"Base de impostos e transferências de impostos de R$ 14 mi: mínimo de R$ 3,5 mi em MDE. Contam: salário de professores, transporte escolar e reforma de escolas. Não contam: merenda (programa suplementar de alimentação, art. 71, IV, da Lei 9.394/1996), aposentadorias de professores e bolsas em faculdades privadas. Do Fundeb, pelo menos 70% vão para a remuneração dos profissionais da educação básica.",
+"Saúde: 15% em ASPS":
+"Base de impostos e transferências constitucionais de R$ 14 mi: mínimo de R$ 2,1 mi com recursos próprios (LC 141/2012, art. 7º). Contam: equipes de saúde da família, Samu e medicamentos da farmácia básica. Não contam: plano de saúde dos servidores, coleta de lixo e despesas pagas com repasses do Fundo Nacional de Saúde.",
+"Restos a Pagar nos limites":
+"Em 31/12, a educação tem R$ 300 mil de RP não processados na fonte de impostos, mas só R$ 200 mil de caixa correspondente: apenas R$ 200 mil contam para os 25%. Se, em 2027, for cancelado um RP de R$ 50 mil que contou para o mínimo de 2026, o Município precisa aplicar R$ 50 mil a mais em 2027.",
+"Consequências":
+"Município que atrasa o RGF fica impedido de receber transferências voluntárias e de contratar operações de crédito até regularizar (art. 51, § 2º, e art. 55, § 3º, da LRF). A pendência aparece no Cauc e trava, por exemplo, um convênio de R$ 1 mi para pavimentação.",
+
+/* ---- Capítulo 5 ---- */
+"5 · Demonstrações contábeis e Notas Explicativas":
+"Pacote de fim de ano: BO, BP, DVP, DFC e BF (e DMPL, quando aplicável) com as Notas Explicativas, publicados no prazo do Tribunal de Contas. As contas anuais vão ao Siconfi pela DCA até 30 de abril (art. 51 da LRF).",
+"Demonstrações Contábeis (DCASP)":
+"Leitura cruzada: o superávit orçamentário do BO (R$ 1.282.300) é diferente do resultado patrimonial da DVP (R$ 1.000.000), e isso é normal. Já o caixa final precisa ser o mesmo no BF, no BP e na DFC; se não for, há erro.",
+"Balanço Orçamentário (BO)":
+"Receita prevista de R$ 18,4 mi e arrecadada de R$ 19,126 mi (excesso de arrecadação de R$ 726 mil). Despesa: dotação atualizada de R$ 18,4 mi, empenhada de R$ 17,84 mi, liquidada de R$ 17,5 mi e paga de R$ 17,2 mi. Resultado orçamentário: superávit de R$ 1.282.300.",
+"Balanço Patrimonial (BP)":
+"Ativo circulante de R$ 5,1 mi (caixa R$ 3,2 mi e créditos R$ 1,9 mi) e não circulante de R$ 20,3 mi. Passivo circulante de R$ 2,4 mi e não circulante de R$ 3,7 mi (Finisa, parcelamentos e provisões). PL de R$ 19,3 mi. Quadro do superávit: ativo financeiro de R$ 3,2 mi − passivo financeiro de R$ 1,5 mi = R$ 1,7 mi.",
+"Demonstração das Variações Patrimoniais (DVP)":
+"VPA de R$ 17.718.824 − VPD de R$ 16.718.824 = resultado patrimonial de R$ 1.000.000. Quociente VPA ÷ VPD = 1,06: para cada R$ 1,00 de redução do patrimônio, houve R$ 1,06 de aumento. As maiores VPD são pessoal (R$ 9,8 mi) e serviços de terceiros (R$ 3,1 mi).",
+"Demonstração dos Fluxos de Caixa (DFC)":
+"Fluxo operacional de +R$ 1,9 mi (arrecadação menos custeio), de investimento de −R$ 1,4 mi (obras e equipamentos) e de financiamento de −R$ 0,2 mi (amortização líquida da dívida). Variação do caixa: +R$ 0,3 mi. Um fluxo operacional negativo indicaria custeio pago com empréstimo ou venda de bens.",
+"Balanço Financeiro (BF)":
+"Ingressos: receita orçamentária de R$ 19,1 mi, transferências recebidas, ingressos extraorçamentários (retenções e inscrição de RP) e saldo anterior de R$ 2,9 mi. Dispêndios: despesa orçamentária de R$ 17,8 mi, transferências concedidas, pagamentos extraorçamentários e saldo final de R$ 3,2 mi. Os dois lados totalizam o mesmo valor.",
+"Notas Explicativas":
+"Nota 7 – Imobilizado: saldo de R$ 20,3 mi; quadro de movimentação (saldo inicial, aquisições, baixas, depreciação e reavaliação); método linear; vidas úteis por classe; e informação de que 15% dos imóveis rurais ainda estão em levantamento.",
+"Definição e base legal":
+"Parágrafo típico da Nota 2: “As demonstrações contábeis foram elaboradas de acordo com a Lei 4.320/1964, a LC 101/2000, as NBC TSP e o MCASP 11ª edição, observando a NBC TSP 11 (R1) e o CTSP 02 quanto à apresentação.”",
+"Fundamentos da evidenciação":
+"Materialidade: com RCL de R$ 18 mi, detalhar em nota um estoque de R$ 5 mil de material de escritório só polui o texto. Um passivo judicial possível de R$ 1,2 mi (6,7% da RCL) precisa aparecer em nota, mesmo sem registro no balanço.",
+"Estrutura padronizada":
+"Sumário típico: Nota 1, contexto operacional; 2, base de preparação; 3, declaração de conformidade; 4, principais políticas contábeis; 5, eventos subsequentes; 6 a 15, notas por demonstração. No balanço, cada linha relevante traz a remissão (ex.: “Imobilizado – Nota 7”).",
+"Notas por demonstração":
+"BF: nota informando que os R$ 659.824 de transferências concedidas à Câmara coincidem com os recebidos por ela. BO: nota explicando o excesso de arrecadação de R$ 726 mil e os créditos suplementares que ele financiou.",
+"Qualidade e consolidação":
+"Nas demonstrações consolidadas (Prefeitura, Câmara, RPPS e fundos), a nota informa que as transações intra-OFSS foram eliminadas, como os R$ 659.824 do duodécimo e a contribuição patronal paga ao próprio RPPS.",
+
+/* ---- Capítulo 6 ---- */
+"6 · Controle interno, auditoria e transparência":
+"Um achado percorre todo o capítulo: o controle interno detecta horas extras pagas sem registro de ponto; a auditoria dimensiona o valor; o relatório, com direito de resposta, vai à gestão; o follow-up confirma a correção; e o portal passa a publicar a folha detalhada.",
+"Controle interno":
+"Plano anual da Controladoria para 2027: auditoria na folha (fevereiro), nas licitações de obras (maio), nos convênios (agosto) e no encerramento do exercício (dezembro), com relatório ao prefeito e parecer anexado às contas anuais.",
+"Controle interno nos Municípios":
+"Lei municipal cria a Controladoria-Geral com controlador de cargo efetivo, garante acesso a todos os sistemas e determina que o parecer do controle interno acompanhe a prestação de contas anual. A Câmara designa um servidor próprio para o seu controle interno.",
+"Governança, riscos e controles":
+"Matriz de riscos da compra de medicamentos: risco de sobrepreço (probabilidade e impacto altos), com controle de pesquisa no Banco de Preços em Saúde; risco de desvio de estoque, com inventário mensal e sistema de dispensação. A matriz segue os componentes do Coso.",
+"Segregação de funções":
+"Na folha, o RH cadastra, outro servidor processa e confere os cálculos, o secretário de administração autoriza e a tesouraria paga. Se uma só pessoa faz tudo, pode incluir um “servidor fantasma” sem que ninguém perceba.",
+"Controle externo e auditoria financeira":
+"O TCE escolhe o Município para auditoria financeira do balanço de 2025. A equipe testa caixa, dívida ativa, imobilizado e RP e emite opinião sobre as demonstrações, que subsidia o parecer prévio sobre as contas do prefeito.",
+"Objetivo (ISSAI 1200)":
+"Materialidade fixada em 2% da despesa (cerca de R$ 357 mil). O auditor conclui que o imobilizado está superavaliado em R$ 1,1 mi (sem depreciação desde 2018) e que o restante está adequado: opinião com ressalva.",
+"Situação nos TCs":
+"O MMD-TC da Atricon avalia, entre outros critérios, se o Tribunal realiza auditorias financeiras anuais. Um Tribunal que está começando pode priorizar os maiores jurisdicionados e aproveitar manuais já publicados por outros tribunais (o manual cita TCE/SE, TCE/MG, TCE/RS e TCE/PR).",
+"Etapas e relatório":
+"Opiniões possíveis sobre um balanço: sem ressalva (tudo adequado); com ressalva (imobilizado superavaliado em R$ 1,1 mi, efeito localizado); adversa (dívida previdenciária de R$ 8 mi não registrada, distorção generalizada); abstenção (sem inventário nem documentos, não há como opinar).",
+"Boa prática: São Cristóvão":
+"Adaptação para outro Município: em janeiro, o controle interno confere a transposição de saldos; em abril, revisa as demonstrações enviadas; a cada quadrimestre, testa RREO e RGF; em dezembro, verifica se as recomendações do ano foram cumpridas.",
+"Tipos e processo de auditoria":
+"Três olhares sobre o transporte escolar: financeiro (o gasto de R$ 1,2 mi está corretamente registrado?), de conformidade (a licitação e o contrato seguiram a Lei 14.133/2021?) e operacional (as rotas atendem os alunos a um custo por aluno razoável?).",
+"Tipos de auditoria":
+"Financeira: conferir o saldo de caixa de R$ 3,2 mi com extratos e confirmação dos bancos. Conformidade: verificar se as dispensas de licitação respeitam os limites da Lei 14.133/2021. Operacional: comparar o custo por consulta das UBS com o de Municípios vizinhos.",
+"Princípios e compliance":
+"O controlador, cunhado do secretário de obras, declara-se impedido de auditar os contratos de obras (independência). Compliance: código de conduta, canal de denúncias e declaração anual de conflito de interesses pelos servidores do setor de compras.",
+"Etapas da auditoria":
+"Planejamento: escolher a folha de pagamento como área de maior risco. Execução: tracing (do ponto ao contracheque), vouching (do contracheque ao ponto e ao ato de nomeação) e reexecução de 30 cálculos. Comunicação: relatório preliminar com 15 dias para manifestação. Monitoramento: em 90 dias, verificar se os 4 pagamentos indevidos foram corrigidos.",
+"Desafios municipais":
+"Sinal de alerta: a despesa com pessoal subiu 18% em um ano, com o mesmo número de servidores e sem revisão geral. O auditor amplia a amostra e encontra gratificações pagas sem ato formal de concessão.",
+"Transparência e prestação de contas":
+"Um cidadão pede pelo SIC os gastos com combustível e recebe a resposta em 20 dias. Se o consumo por veículo já estivesse publicado no portal (transparência ativa), o pedido nem seria necessário.",
+"Transparência ativa":
+"Publicar no portal, sem pedido: empenhos, liquidações e pagamentos até o primeiro dia útil seguinte (Decreto 10.540/2020), contratos na íntegra, folha nominal, diárias e obras em andamento com percentual executado.",
+"Transparência passiva":
+"Pedido pelo e-SIC: “Quanto a Prefeitura pagou à empresa X em 2025?”. Prazo de 20 dias, prorrogável por mais 10 com justificativa (LAI, art. 11). Negativa só com base legal (dado pessoal ou sigiloso), sempre com direito a recurso.",
+"Portal da Transparência":
+"Conteúdo mínimo: receitas por natureza, despesas por empenho com o favorecido, licitações e contratos, convênios, servidores e remunerações, RREO, RGF, PPA, LDO, LOA, prestação de contas e parecer do TC, com opção de download em formato aberto (CSV).",
+"PNTP (Atricon e TCs)":
+"O portal é avaliado por questionário padronizado e recebe um índice e, se atingir as faixas mais altas, um selo (Diamante, Ouro ou Prata). Publicar itens simples, como a relação de obras paralisadas e as diárias pagas, costuma elevar a nota.",
+"Integração e desafios":
+"Ciclo integrado: o portal mostra compras de merenda acima do preço médio; um cidadão denuncia; o controle interno audita; o TCE recebe o relatório; a gestão corrige o contrato e publica a correção.",
+
+/* ---- Anexos ---- */
+"Anexos · Modelos de Notas Explicativas":
+"Uso prático: copiar o Anexo 1.A, preencher os campos entre colchetes com dados do IBGE e da gestão e ajustar o texto com base nos exemplos reais do Anexo 1.B.",
+"Anexos 1–4 · Notas gerais":
+"Anexo 1.A preenchido: “O Município de São Benedito do Cerrado é pessoa jurídica de direito público interno, com população de cerca de 12 mil habitantes (IBGE). As demonstrações são consolidadas e abrangem a Prefeitura, a Câmara Municipal, o Fundo Municipal de Saúde e o RPPS.”",
+"Anexos 5–8 · BO e BF":
+"Nota do BF sobre resultado financeiro: “O saldo de caixa passou de R$ 2,9 mi para R$ 3,2 mi, aumento de R$ 300 mil, dos quais R$ 220 mil correspondem ao convênio da creche, vinculado a obra em andamento.”",
+"Anexos 9–21 · Balanço Patrimonial":
+"Nota da dívida ativa: estoque de R$ 1,6 mi; ajuste para perdas de R$ 256,8 mil calculado pela média de recebimento dos últimos três anos; inscrições e baixas do ano; e ações de cobrança, como o protesto de 320 certidões de dívida ativa.",
+"Anexos 22–23 · DVP e DFC":
+"Nota da DFC: “O caixa líquido das atividades operacionais foi de R$ 1,9 mi, suficiente para financiar investimentos de R$ 1,4 mi sem novas operações de crédito.”",
+
+/* ---- Base normativa ---- */
+"Base normativa transversal":
+"Roteiro para uma dúvida sobre Restos a Pagar: Lei 4.320/1964 (art. 36, conceito), LRF (art. 42, final de mandato), MCASP (procedimentos orçamentários), IPC 01 (transferência de saldos) e as instruções do Tribunal de Contas local.",
+"Leis e Constituição":
+"Pergunta: o dinheiro do leilão de veículos pode pagar salários? Resposta: não. O art. 44 da LRF proíbe usar receita de alienação de bens em despesa corrente, salvo se destinada por lei aos regimes de previdência.",
+"STN · manuais e IPCs":
+"Dúvida sobre como fechar a disponibilidade por fonte: MCASP (procedimentos orçamentários e controle das fontes de recursos), PCASP Estendido 2026 para as contas dos grupos 7.2 e 8.2 e IPC 04 para a apuração do superávit financeiro.",
+"CFC · NBC TSP":
+"Qual norma usar? Ação judicial: NBC TSP 03 (R1). Aposentadorias dos servidores: NBC TSP 15 (R1). Software comprado: NBC TSP 08. Montagem das notas: NBC TSP 11 (R1) e CTSP 02.",
+"Senado Federal":
+"Com RCL de R$ 18 mi: dívida consolidada líquida de até R$ 21,6 mi (Resolução 40/2001); novas operações de crédito no ano de até R$ 2,88 mi (16%) e serviço da dívida de até R$ 2,07 mi (11,5%) (Resolução 43/2001).",
+"Controle e auditoria":
+"Um controle interno que quer começar a fazer auditoria financeira pode usar a NBASP 100 para os princípios, a ISSAI 1200 para os objetivos e o Manual de Auditoria Financeira do TCU como roteiro de papéis de trabalho.",
+"Sistemas e ferramentas":
+"Caminho dos dados: o Siafic gera a MSC mensal; o Siconfi monta RREO, RGF e DCA; a STN calcula a Capag e o Ranking da qualidade da informação; pendências aparecem no Cauc. Em paralelo, o Siope (educação) e o Siops (saúde) acompanham os mínimos, e o PNTP avalia o portal."
+};
+
+/* ============================================================
+   PREPARAÇÃO
+   ============================================================ */
+const ALL = []; const byId = {};
+(function prep(n, depth, branch, parent){
+  n.id = ALL.length; n.depth = depth; n.parent = parent; n.b = branch; n.ex = EX[n.t];
+  n.open = depth < 1; ALL.push(n); byId[n.id] = n;
+  (n.c || []).forEach((ch, i) => prep(ch, depth + 1, depth === 0 ? i + 1 : branch, n));
+})(DATA, 0, 0, null);
+
+// Lados: capítulos 1–4 à direita (de cima para baixo); 5–8 à esquerda,
+// ordenados de baixo para cima para que a leitura siga o sentido horário.
+const ROOT = DATA;
+const RIGHT = ROOT.c.slice(0, 4);
+const LEFT  = ROOT.c.slice(4).reverse();
+RIGHT.forEach(n => n.side = 1); LEFT.forEach(n => n.side = -1);
+ROOT.c.forEach(n => n.open = true); // mostra o 2º nível ao abrir
+
+/* ============================================================
+   MEDIDAS E LAYOUT
+   ============================================================ */
+const FONT = 'system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
+const STY = [
+  {size:17,  weight:700, padX:20, padY:14, maxW:250, lh:22, r:14},
+  {size:14.5,weight:650, padX:16, padY:10, maxW:250, lh:19, r:10},
+  {size:13.5,weight:600, padX:13, padY:8,  maxW:240, lh:18, r:8},
+  {size:13,  weight:500, padX:12, padY:7,  maxW:250, lh:17, r:7}
+];
+const sty = d => STY[Math.min(d, 3)];
+const HGAP = 60;
+const VGAP = d => d <= 1 ? 26 : d === 2 ? 12 : 8;
+const ctx = document.createElement('canvas').getContext('2d');
+
+function measure(n){
+  const s = sty(n.depth);
+  ctx.font = `${s.weight} ${s.size}px ${FONT}`;
+  const words = n.t.split(' '); const lines = []; let cur = '';
+  for (const w of words){
+    const t = cur ? cur + ' ' + w : w;
+    if (ctx.measureText(t).width > s.maxW && cur){ lines.push(cur); cur = w; } else cur = t;
+  }
+  if (cur) lines.push(cur);
+  n.lines = lines;
+  n.extra = (n.c && n.depth > 0) ? 8 : 0; // folga para o indicador de subtópicos
+  n.w = Math.ceil(Math.max(...lines.map(l => ctx.measureText(l).width)) + s.padX * 2 + n.extra);
+  n.h = lines.length * s.lh + s.padY * 2;
+}
+ALL.forEach(measure);
+
+function subH(n){
+  if (!n.c || !n.open){ n._sh = n.h; return n.h; }
+  const g = VGAP(n.depth + 1); let tot = 0;
+  n.c.forEach((ch, i) => { tot += subH(ch) + (i ? g : 0); });
+  n._ch = tot; n._sh = Math.max(n.h, tot); return n._sh;
+}
+function place(n, nearX, top, dir){
+  n.dir = dir; n.x = nearX; n.y = top + n._sh / 2;
+  if (n.c && n.open){
+    const g = VGAP(n.depth + 1); let cy = n.y - n._ch / 2;
+    const cx = nearX + dir * (n.w + HGAP);
+    n.c.forEach(ch => { place(ch, cx, cy, dir); cy += ch._sh + g; });
+  }
+}
+function layout(){
+  ROOT.x = 0; ROOT.y = 0;
+  for (const [arr, dir] of [[RIGHT, 1], [LEFT, -1]]){
+    const list = ROOT.open ? arr : [];
+    let tot = 0; list.forEach((ch, i) => { tot += subH(ch) + (i ? VGAP(1) : 0); });
+    let cy = -tot / 2;
+    list.forEach(ch => { place(ch, dir * (ROOT.w / 2 + HGAP), cy, dir); cy += ch._sh + VGAP(1); });
+  }
+}
+const rectX = n => n.depth === 0 ? -n.w / 2 : (n.dir > 0 ? n.x : n.x - n.w);
+function visible(n, out = []){ out.push(n); if (n.open && n.c) n.c.forEach(ch => visible(ch, out)); return out; }
+
+/* ============================================================
+   RENDERIZAÇÃO SVG
+   ============================================================ */
+const NS = 'http://www.w3.org/2000/svg';
+const svg = document.getElementById('map');
+const vpG = document.getElementById('viewport');
+const linksG = document.getElementById('links');
+const nodesG = document.getElementById('nodes');
+let T = {x:0, y:0, k:1};
+let selected = null;
+let matchSet = new Set();
+
+function el(tag, attrs, parent){
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e); return e;
+}
+function applyT(){ vpG.setAttribute('transform', `translate(${T.x},${T.y}) scale(${T.k})`); }
+const bc = n => n.depth === 0 ? 'var(--b0)' : `var(--b${n.b})`;
+
+function render(){
+  layout();
+  linksG.textContent = ''; nodesG.textContent = '';
+  const vis = visible(ROOT);
+  // ligações
+  for (const n of vis){
+    if (!n.parent) continue;
+    const p = n.parent;
+    const px = p.depth === 0 ? n.dir * p.w / 2 : p.x + n.dir * p.w, py = p.y;
+    const cx = n.x, cy = n.y, m = n.dir * HGAP * 0.55;
+    el('path', {
+      class:'link', d:`M${px},${py} C${px + m},${py} ${cx - m},${cy} ${cx},${cy}`,
+      stroke:`color-mix(in srgb, ${bc(n)} var(--line-mix), var(--bg))`,
+      'stroke-width': n.depth === 1 ? 3 : n.depth === 2 ? 2 : 1.4,
+      'stroke-opacity': n.depth === 1 ? .9 : .7
+    }, linksG);
+  }
+  // nós
+  for (const n of vis){
+    const s = sty(n.depth);
+    const g = el('g', {
+      class:'node' + (n === selected ? ' sel' : '') + (matchSet.has(n) ? ' match' : ''),
+      transform:`translate(${rectX(n)},${n.y - n.h / 2})`,
+      'data-id': n.id, tabindex: 0, role:'button',
+      'aria-label': n.t + (n.c ? (n.open ? ' (expandido)' : ' (recolhido)') : '')
+    }, nodesG);
+    g.style.setProperty('--bc', bc(n));
+    let fill, stroke, txt, sw;
+    if (n.depth === 0){ fill = 'var(--b0)'; stroke = 'var(--b0)'; txt = 'var(--b0-text)'; sw = 1; }
+    else if (n.depth === 1){ fill = bc(n); stroke = bc(n); txt = '#ffffff'; sw = 1; }
+    else {
+      fill = `color-mix(in srgb, ${bc(n)} var(--tint), var(--surface))`;
+      stroke = `color-mix(in srgb, ${bc(n)} var(--line-mix), var(--text))`;
+      txt = 'var(--text)'; sw = n.depth === 2 ? 1.6 : 1;
+    }
+    el('rect', {class:'box', width:n.w, height:n.h, rx:s.r, fill, stroke, 'stroke-width':sw}, g);
+    const tx = s.padX + (n.dir < 0 ? n.extra : 0);
+    const t = el('text', {x:tx, y:s.padY, fill:txt, 'font-size':s.size, 'font-weight':s.weight, 'font-family':FONT}, g);
+    n.lines.forEach((ln, i) => {
+      const sp = el('tspan', {x:tx, dy: i === 0 ? s.lh * 0.78 : s.lh}, t); sp.textContent = ln;
+    });
+    // indicador de subtópicos
+    if (n.c && n.depth > 0){
+      const bx = n.dir > 0 ? n.w : 0;
+      const b = el('g', {class:'badge', transform:`translate(${bx},${n.h / 2})`}, g);
+      el('circle', {r:10, fill:'var(--surface)', stroke:bc(n)}, b);
+      const bt = el('text', {'text-anchor':'middle', dy:'0.35em', fill:'var(--text)', 'font-family':FONT}, b);
+      bt.textContent = n.open ? '−' : n.c.length;
+    }
+  }
+}
+
+/* ============================================================
+   INTERAÇÃO: seleção, painel, zoom, busca
+   ============================================================ */
+const panel = document.getElementById('panel');
+const screenPos = n => ({x: T.x + (rectX(n) + n.w / 2) * T.k, y: T.y + n.y * T.k});
+
+function toggle(n){
+  if (!n.c) return;
+  const before = screenPos(n);
+  n.open = !n.open; render();
+  const after = screenPos(n);
+  T.x += before.x - after.x; T.y += before.y - after.y; applyT();
+}
+function path(n){ const a = []; for (let p = n.parent; p; p = p.parent) a.unshift(p); return a; }
+function openAncestors(n){ path(n).forEach(p => p.open = true); }
+
+function showPanel(n){
+  selected = n;
+  const crumbs = path(n).map(p => p.t).join(' › ');
+  const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  let h = `<button class="iconbtn close" id="closePanel" aria-label="Fechar painel">✕ Fechar</button>`;
+  if (crumbs) h += `<div class="crumbs">${esc(crumbs)}</div>`;
+  h += `<h2>${esc(n.t)}</h2>`;
+  if (n.p) h += `<span class="pg">${/^[0-9]/.test(n.p) ? 'p. ' : ''}${esc(n.p)}</span>`;
+  if (n.d) h += `<p>${esc(n.d)}</p>`;
+  if (n.ex){
+    h += `<div class="ex" style="--bc:${bc(n)}"><div class="exlabel">Exemplo prático</div>`;
+    let entry = [];
+    const flush = () => { if (entry.length){ h += `<pre class="entry">${entry.map(esc).join('\n')}</pre>`; entry = []; } };
+    n.ex.split('\n').forEach(ln => { if (/^[DC]: /.test(ln)) entry.push(ln); else { flush(); h += `<p>${esc(ln)}</p>`; } });
+    flush(); h += `</div>`;
+  }
+  if (n.c){
+    h += `<div class="sub">Subtópicos (${n.c.length})</div><ul>`;
+    n.c.forEach(ch => { h += `<li><button data-go="${ch.id}" style="--bc:${bc(ch)}">${esc(ch.t)}</button></li>`; });
+    h += `</ul>`;
+  }
+  panel.innerHTML = h; panel.hidden = false; panel.scrollTop = 0;
+}
+panel.addEventListener('click', e => {
+  if (e.target.closest('#closePanel')){ panel.hidden = true; selected = null; render(); return; }
+  const b = e.target.closest('[data-go]');
+  if (b){ const n = byId[+b.dataset.go]; openAncestors(n); showPanel(n); render(); centerOn(n); }
+});
+
+function onNodeActivate(n){
+  showPanel(n);
+  if (n.c) toggle(n); else render();
+}
+
+function stageRect(){ return svg.getBoundingClientRect(); }
+function centerOn(n){
+  const r = stageRect();
+  T.x = r.width / 2 - (rectX(n) + n.w / 2) * T.k; T.y = r.height / 2 - n.y * T.k; applyT();
+}
+function fit(){
+  const vis = visible(ROOT); let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+  vis.forEach(n => { const rx = rectX(n); x0 = Math.min(x0, rx); x1 = Math.max(x1, rx + n.w); y0 = Math.min(y0, n.y - n.h / 2); y1 = Math.max(y1, n.y + n.h / 2); });
+  const r = stageRect(); const top = 56;
+  const k = Math.max(.15, Math.min(1.1, Math.min(r.width / (x1 - x0 + 60), (r.height - top) / (y1 - y0 + 40))));
+  T.k = k; T.x = r.width / 2 - (x0 + x1) / 2 * k; T.y = top + (r.height - top) / 2 - (y0 + y1) / 2 * k; applyT();
+}
+const clampK = k => Math.max(.15, Math.min(2.5, k));
+function zoomAt(k, cx, cy){
+  const r = stageRect(); const sx = cx - r.left, sy = cy - r.top;
+  const wx = (sx - T.x) / T.k, wy = (sy - T.y) / T.k;
+  T.k = clampK(k); T.x = sx - wx * T.k; T.y = sy - wy * T.k; applyT();
+}
+
+// arrastar, pinça e clique
+const ptrs = new Map(); let drag = null, pinch = null, downNode = null, moved = false;
+svg.addEventListener('pointerdown', e => {
+  svg.setPointerCapture(e.pointerId);
+  ptrs.set(e.pointerId, {x:e.clientX, y:e.clientY});
+  if (ptrs.size === 1){
+    drag = {x:e.clientX, y:e.clientY, tx:T.x, ty:T.y}; moved = false;
+    const g = e.target.closest && e.target.closest('.node'); downNode = g ? +g.dataset.id : null;
+  } else if (ptrs.size === 2){
+    const [a, b] = [...ptrs.values()];
+    pinch = {d:Math.hypot(a.x - b.x, a.y - b.y), k:T.k}; drag = null; downNode = null;
+  }
+});
+svg.addEventListener('pointermove', e => {
+  if (!ptrs.has(e.pointerId)) return;
+  ptrs.set(e.pointerId, {x:e.clientX, y:e.clientY});
+  if (pinch && ptrs.size === 2){
+    const [a, b] = [...ptrs.values()];
+    zoomAt(pinch.k * Math.hypot(a.x - b.x, a.y - b.y) / pinch.d, (a.x + b.x) / 2, (a.y + b.y) / 2);
+  } else if (drag){
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    if (!moved && Math.abs(dx) + Math.abs(dy) > 4){ moved = true; svg.classList.add('dragging'); }
+    if (moved){ T.x = drag.tx + dx; T.y = drag.ty + dy; applyT(); }
+  }
+});
+function endPtr(e){
+  ptrs.delete(e.pointerId);
+  if (ptrs.size < 2) pinch = null;
+  if (drag && !moved && downNode !== null && e.type === 'pointerup') onNodeActivate(byId[downNode]);
+  if (ptrs.size === 0){ drag = null; downNode = null; svg.classList.remove('dragging'); }
+}
+svg.addEventListener('pointerup', endPtr);
+svg.addEventListener('pointercancel', endPtr);
+svg.addEventListener('wheel', e => { e.preventDefault(); zoomAt(T.k * Math.exp(-e.deltaY * 0.0015), e.clientX, e.clientY); }, {passive:false});
+svg.addEventListener('keydown', e => {
+  const g = e.target.closest && e.target.closest('.node');
+  if (g && (e.key === 'Enter' || e.key === ' ')){
+    e.preventDefault(); const n = byId[+g.dataset.id]; onNodeActivate(n);
+    const ng = nodesG.querySelector(`[data-id="${n.id}"]`); if (ng) ng.focus();
+  }
+});
+
+// botões
+document.getElementById('btnExpand').onclick = () => { ALL.forEach(n => n.open = true); render(); fit(); };
+document.getElementById('btnCollapse').onclick = () => { ALL.forEach(n => n.open = n.depth === 0); render(); fit(); };
+document.getElementById('btnFit').onclick = fit;
+document.getElementById('btnZoomIn').onclick = () => { const r = stageRect(); zoomAt(T.k * 1.25, r.left + r.width / 2, r.top + r.height / 2); };
+document.getElementById('btnZoomOut').onclick = () => { const r = stageRect(); zoomAt(T.k / 1.25, r.left + r.width / 2, r.top + r.height / 2); };
+
+// busca
+const norm = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const qIn = document.getElementById('q'), qCount = document.getElementById('qcount');
+let matches = [], mi = -1, qTimer = null;
+function runSearch(){
+  const q = norm(qIn.value.trim());
+  matches = q.length >= 2 ? ALL.filter(n => norm(n.t).includes(q) || norm(n.d).includes(q) || norm(n.ex).includes(q) || norm(n.p).includes(q)) : [];
+  matchSet = new Set(matches); mi = -1;
+  matches.forEach(openAncestors);
+  qCount.textContent = q.length >= 2 ? `${matches.length} resultado${matches.length === 1 ? '' : 's'}` : '';
+  render();
+  if (matches.length) fit();
+}
+qIn.addEventListener('input', () => { clearTimeout(qTimer); qTimer = setTimeout(runSearch, 200); });
+qIn.addEventListener('keydown', e => {
+  if (e.key === 'Enter'){
+    e.preventDefault(); clearTimeout(qTimer);
+    if (!matches.length) runSearch();
+    if (!matches.length) return;
+    mi = (mi + 1) % matches.length; const n = matches[mi];
+    showPanel(n); render(); centerOn(n);
+    qCount.textContent = `${mi + 1} de ${matches.length}`;
+  }
+});
+
+/* ============================================================
+   ABAS E TEMA
+   ============================================================ */
+document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x === b));
+  document.querySelectorAll('.view').forEach(v => v.hidden = v.id !== b.dataset.view);
+  if (b.dataset.view === 'mapView') fit();
+}));
+function showTab(id){
+  document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x.dataset.view === id));
+  document.querySelectorAll('.view').forEach(v => v.hidden = v.id !== id);
+}
+document.getElementById('refBtn').onclick = () => {
+  showTab('analysisView');
+  document.getElementById('analysisView').scrollTop = 0;
+};
+document.getElementById('copyCite').onclick = () => {
+  const txt = document.getElementById('citeText').textContent.trim();
+  const msg = document.getElementById('copyMsg');
+  const fallback = () => {
+    const r = document.createRange(); r.selectNodeContents(document.getElementById('citeText'));
+    const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+    msg.textContent = 'Citação selecionada. Use Ctrl+C para copiar.';
+  };
+  try {
+    navigator.clipboard.writeText(txt).then(() => { msg.textContent = 'Citação copiada.'; }, fallback);
+  } catch(e){ fallback(); }
+};
+const themeBtn = document.getElementById('themeBtn');
+function currentTheme(){
+  const a = document.documentElement.getAttribute('data-theme');
+  if (a) return a;
+  return matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+try { const saved = localStorage.getItem('mm-theme'); if (saved) document.documentElement.setAttribute('data-theme', saved); } catch(e){}
+themeBtn.onclick = () => {
+  const next = currentTheme() === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  try { localStorage.setItem('mm-theme', next); } catch(e){}
+};
+
+/* ============================================================
+   INÍCIO
+   ============================================================ */
+render(); fit();
+let rT; window.addEventListener('resize', () => { clearTimeout(rT); rT = setTimeout(fit, 150); });
+</script>
+</body>
+</html>
