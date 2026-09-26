@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mapa do Manual de Contabilidade Pública Municipal</title>
+<meta name="description" content="Apresentação do mapa mental interativo do Manual Técnico de Contabilidade Pública Municipal (CNM, 2026), com exemplos práticos e análise do documento.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#f4f6f9; --surface:#ffffff; --surface-2:#eaeef4; --ink:#141b26; --muted:#556072;
+  --line:#d5dbe4; --accent:#1d4ed8; --accent-ink:#ffffff; --accent-soft:#e3eafc;
+  --b1:#1d4ed8; --b2:#0f766e; --b3:#7e22ce; --b4:#c2410c; --b5:#be185d; --b6:#15803d; --b7:#a16207; --b8:#475569;
+  --sans:"Public Sans",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e131a; --surface:#161d26; --surface-2:#1e2733; --ink:#e7ebf1; --muted:#9aa5b5;
+    --line:#2b3542; --accent:#7ea2ff; --accent-ink:#0e131a; --accent-soft:#1b2842;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e131a; --surface:#161d26; --surface-2:#1e2733; --ink:#e7ebf1; --muted:#9aa5b5;
+  --line:#2b3542; --accent:#7ea2ff; --accent-ink:#0e131a; --accent-soft:#1b2842;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} *{transition:none !important} }
+body{
+  margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+  font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;
+  padding-inline:16px;
+}
+a{color:var(--accent)}
+a:focus-visible,button:focus-visible{outline:3px solid var(--accent); outline-offset:3px; border-radius:6px}
+.wrap{max-width:1120px; margin:0 auto}
+h1,h2,h3{text-wrap:balance; letter-spacing:-.015em; line-height:1.15; margin:0}
+.eyebrow{font-family:var(--mono); font-size:12.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
+
+/* topo */
+.top{display:flex; align-items:center; justify-content:space-between; gap:12px; padding-block:18px; flex-wrap:wrap}
+.brand{display:flex; align-items:center; gap:10px; font-weight:700; font-size:15px}
+.brand .mark{font-family:var(--mono); font-size:12px; font-weight:500; background:var(--ink); color:var(--bg); padding:4px 7px; border-radius:5px}
+.top nav{display:flex; gap:18px; flex-wrap:wrap; font-size:14px}
+.top nav a{color:var(--muted); text-decoration:none}
+.top nav a:hover{color:var(--ink)}
+
+/* hero */
+.hero{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.25fr); gap:48px; align-items:center; padding-block:40px 56px}
+.hero h1{font-size:clamp(34px,5vw,54px); font-weight:800; margin-top:14px}
+.hero h1 em{font-style:normal; color:var(--accent)}
+.hero p.lead{font-size:18px; color:var(--muted); max-width:52ch; margin:18px 0 0}
+.ctas{display:flex; gap:12px; flex-wrap:wrap; margin-top:28px}
+.btn{
+  display:inline-flex; align-items:center; gap:8px; text-decoration:none; font-weight:650; font-size:15.5px;
+  padding:13px 20px; border-radius:10px; border:1px solid transparent; transition:transform .15s, box-shadow .15s;
+}
+.btn.primary{background:var(--accent); color:var(--accent-ink); box-shadow:0 6px 18px -8px var(--accent)}
+.btn.primary:hover{transform:translateY(-1px)}
+.btn.ghost{background:var(--surface); color:var(--ink); border-color:var(--line)}
+.btn.ghost:hover{background:var(--surface-2)}
+.code-line{margin-top:26px; font-family:var(--mono); font-size:13px; color:var(--muted)}
+.code-line b{color:var(--ink); font-weight:500}
+
+.preview{
+  display:block; position:relative; border-radius:14px; overflow:hidden; border:1px solid var(--line);
+  background:var(--surface); box-shadow:0 30px 60px -30px rgba(20,27,38,.35); text-decoration:none;
+}
+.preview img{display:block; width:100%; height:auto; max-width:100%}
+.preview .bar{display:flex; align-items:center; gap:6px; padding:9px 12px; border-bottom:1px solid var(--line); background:var(--surface-2)}
+.preview .bar i{width:9px; height:9px; border-radius:50%; background:var(--line)}
+.preview .bar span{margin-left:8px; font-family:var(--mono); font-size:11.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.preview .open{
+  position:absolute; right:14px; bottom:14px; background:var(--ink); color:var(--bg); font-size:13px; font-weight:650;
+  padding:8px 12px; border-radius:8px; opacity:.92;
+}
+
+/* números */
+.figures{display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:0; border:1px solid var(--line); border-radius:14px; background:var(--surface); overflow:hidden}
+.figures > div{padding:20px 22px; border-right:1px solid var(--line)}
+.figures > div:last-child{border-right:0}
+.figures .n{font-size:34px; font-weight:800; letter-spacing:-.03em; font-variant-numeric:tabular-nums}
+.figures .l{font-size:14px; color:var(--muted); line-height:1.4; margin-top:2px}
+
+section{padding-block:64px 0}
+.sec-head{display:flex; flex-direction:column; gap:10px; max-width:62ch; margin-bottom:28px}
+.sec-head h2{font-size:clamp(26px,3.2vw,34px); font-weight:800}
+.sec-head p{margin:0; color:var(--muted); font-size:17px}
+
+/* ramos */
+.branches{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px}
+.branch{
+  display:grid; grid-template-columns:auto 1fr; gap:4px 16px; align-items:start;
+  background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:18px 20px;
+}
+.branch .num{
+  grid-row:span 3; font-family:var(--mono); font-size:13px; font-weight:500; color:#fff; background:var(--bc);
+  width:40px; height:40px; border-radius:9px; display:grid; place-items:center;
+}
+.branch h3{font-size:17px; font-weight:700}
+.branch .pp{font-family:var(--mono); font-size:12px; color:var(--muted)}
+.branch p{margin:4px 0 0; font-size:14.5px; color:var(--muted); line-height:1.55}
+
+/* como usar */
+.steps{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; counter-reset:s}
+.step{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:18px}
+.step .k{font-family:var(--mono); font-size:12px; color:var(--accent); font-weight:500}
+.step h3{font-size:16px; margin-top:8px}
+.step p{margin:6px 0 0; font-size:14.5px; color:var(--muted); line-height:1.55}
+
+/* exemplo */
+.sample{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:28px; align-items:start}
+.sample .card{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px 22px}
+.sample .crumb{font-size:12.5px; color:var(--muted)}
+.sample h3{font-size:20px; margin-top:6px}
+.sample .exl{margin-top:14px; font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
+.sample .card p{font-size:15px; margin:6px 0 0}
+.sample pre{
+  margin:12px 0 0; font-family:var(--mono); font-size:13px; line-height:1.7; background:var(--surface-2);
+  border:1px solid var(--line); border-radius:8px; padding:10px 12px; white-space:pre-wrap; overflow-x:auto;
+}
+.sample ul{margin:0; padding-left:20px; color:var(--muted)}
+.sample li{margin-bottom:8px}
+
+/* referência */
+.ref{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:24px; display:flex; flex-direction:column; gap:14px}
+.ref .cite{font-size:15.5px; margin:0; line-height:1.65}
+.ref .note{font-size:14px; color:var(--muted); margin:0}
+
+/* referências completas */
+.refgroups{display:flex; flex-direction:column; gap:18px}
+.refgroup{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:22px 24px}
+.refgroup h3{font-size:18px; display:flex; align-items:baseline; gap:10px; flex-wrap:wrap}
+.refgroup h3 .tag{font-family:var(--mono); font-size:11.5px; font-weight:500; color:var(--muted); background:var(--surface-2); padding:2px 8px; border-radius:999px}
+.refgroup > p{margin:8px 0 0; font-size:14.5px; color:var(--muted); max-width:80ch}
+.reflist{margin:14px 0 0; padding-left:20px; display:flex; flex-direction:column; gap:8px}
+.reflist li{font-size:14.5px; line-height:1.55}
+.reflist li .use{display:block; font-size:13px; color:var(--muted)}
+.reflist.cols{display:block; columns:2 360px; column-gap:32px}
+.reflist.cols li{break-inside:avoid; margin-bottom:8px}
+.refgroup details{margin-top:12px}
+.refgroup summary{cursor:pointer; font-weight:600; font-size:14.5px; color:var(--accent)}
+footer{padding-block:56px 40px; color:var(--muted); font-size:13.5px; display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; border-top:1px solid var(--line); margin-top:64px}
+
+@media (max-width:900px){
+  .hero{grid-template-columns:1fr; gap:32px; padding-block:24px 40px}
+  .figures{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .figures > div{border-bottom:1px solid var(--line)}
+  .steps{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .sample{grid-template-columns:1fr}
+}
+@media (max-width:560px){
+  .branches,.steps{grid-template-columns:1fr}
+  .figures > div:nth-child(2n){border-right:0}
+  .top nav{display:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand"><span class="mark">CASP</span> Contabilidade Pública Municipal</div>
+    <nav aria-label="Seções">
+      <a href="#conteudo">Conteúdo</a>
+      <a href="#como-usar">Como usar</a>
+      <a href="#exemplo">Exemplos</a>
+      <a href="#referencia">Fonte</a>
+      <a href="#referencias">Referências</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="hero">
+      <div>
+        <div class="eyebrow">Mapa mental interativo · CNM 2026</div>
+        <h1>O Manual Técnico de Contabilidade Pública Municipal <em>em um só mapa</em></h1>
+        <p class="lead">Os seis capítulos do manual da Confederação Nacional de Municípios organizados em tópicos clicáveis, cada um com descrição, página de referência e um exemplo prático no Município simulado de São Benedito do Cerrado.</p>
+        <div class="ctas">
+          <a class="btn primary" href="mapa_mental_manual_contabilidade_publica.html">Abrir o mapa mental →</a>
+          <a class="btn ghost" href="mapa_mental_manual_contabilidade_publica.html#analise">Ver a análise do documento</a>
+        </div>
+        <div class="code-line">Do <b>1.1.1</b> Caixa ao <b>8.2.1.1.1</b> Disponibilidade por fonte: do plano de contas à prestação de contas.</div>
+      </div>
+
+      <a class="preview" href="mapa_mental_manual_contabilidade_publica.html" aria-label="Abrir o mapa mental">
+        <div class="bar"><i></i><i></i><i></i><span>mapa_mental_manual_contabilidade_publica.html</span></div>
+        <img src="mapa-mental-previa.png" alt="Prévia do mapa mental: o título do manual ao centro, com os seis capítulos, os anexos e a base normativa em ramos coloridos ao redor." width="1600" height="1000">
+        <span class="open">Abrir o mapa</span>
+      </a>
+    </div>
+
+    <div class="figures" aria-label="O mapa em números">
+      <div><div class="n">141</div><div class="l">tópicos organizados em 4 níveis</div></div>
+      <div><div class="n">141</div><div class="l">exemplos práticos, um por tópico</div></div>
+      <div><div class="n">6</div><div class="l">capítulos do manual, p. 7 a 295</div></div>
+      <div><div class="n">23</div><div class="l">anexos com modelos de Notas Explicativas</div></div>
+      <div><div class="n">9</div><div class="l">pontos de atenção apontados na análise</div></div>
+    </div>
+
+    <section id="conteudo">
+      <div class="sec-head">
+        <div class="eyebrow">Os ramos do mapa</div>
+        <h2>O que você encontra no mapa</h2>
+        <p>Os ramos seguem a ordem do manual, no sentido horário, com as cores usadas no mapa.</p>
+      </div>
+      <div class="branches">
+        <article class="branch" style="--bc:var(--b1)"><span class="num">1</span><h3>Abertura dos saldos contábeis iniciais</h3><span class="pp">p. 7–46</span><p>Virada do exercício pelas IPC 01 e 03, as 8 classes do PCASP, o 5º nível de consolidação e os lançamentos de abertura.</p></article>
+        <article class="branch" style="--bc:var(--b2)"><span class="num">2</span><h3>Execução orçamentária e financeira</h3><span class="pp">p. 47–90</span><p>Receitas, Reforma Tributária (ISS → IBS), estágios da despesa, Restos a Pagar, art. 42 da LRF, PPA, LDO, LOA, RREO e RGF.</p></article>
+        <article class="branch" style="--bc:var(--b3)"><span class="num">3</span><h3>Ativo fixo e movimentações patrimoniais</h3><span class="pp">p. 91–124</span><p>Imobilizado, depreciação, reavaliação × valor justo, recuperabilidade, provisões e contingências (NBC TSP 03 (R1)).</p></article>
+        <article class="branch" style="--bc:var(--b4)"><span class="num">4</span><h3>Caso simulado: contabilização anual</h3><span class="pp">p. 125–174</span><p>Um ano em São Benedito do Cerrado: calendário mensal, fechamento em 10 etapas, DDR por fonte e limites fiscais.</p></article>
+        <article class="branch" style="--bc:var(--b5)"><span class="num">5</span><h3>Demonstrações contábeis e Notas Explicativas</h3><span class="pp">p. 175–268</span><p>BO, BP, DVP, DFC e BF, com análise, e a estrutura das Notas Explicativas pela NBC TSP 11 (R1).</p></article>
+        <article class="branch" style="--bc:var(--b6)"><span class="num">6</span><h3>Controle interno, auditoria e transparência</h3><span class="pp">p. 269–295</span><p>Controle interno e externo, auditoria financeira (ISSAI 1200), etapas da auditoria, LAI, Portal da Transparência e PNTP.</p></article>
+        <article class="branch" style="--bc:var(--b7)"><span class="num">A</span><h3>Anexos · Modelos de Notas Explicativas</h3><span class="pp">23 anexos</span><p>Modelos de redação e exemplos reais para notas gerais, BO, BF, cada grupo do BP, DVP e DFC.</p></article>
+        <article class="branch" style="--bc:var(--b8)"><span class="num">§</span><h3>Base normativa transversal</h3><span class="pp">p. 296–300</span><p>CF/1988, Lei 4.320/1964, LRF, MCASP, PCASP, IPC, NBC TSP, Resoluções do Senado e sistemas como Siafic, Siconfi e Cauc.</p></article>
+      </div>
+    </section>
+
+    <section id="como-usar">
+      <div class="sec-head">
+        <div class="eyebrow">Navegação</div>
+        <h2>Como usar</h2>
+        <p>O mapa roda no navegador, sem instalação e sem precisar de internet.</p>
+      </div>
+      <div class="steps">
+        <div class="step"><div class="k">clique</div><h3>Expanda os ramos</h3><p>Clique num tópico para abrir os subtópicos. O número no círculo indica quantos há.</p></div>
+        <div class="step"><div class="k">painel</div><h3>Leia o detalhe</h3><p>O painel lateral mostra a descrição, a página do manual e o exemplo prático do tópico.</p></div>
+        <div class="step"><div class="k">busca</div><h3>Encontre um tema</h3><p>Digite “DDR”, “art 42” ou “Fundeb”, sem acento. Enter salta entre os resultados.</p></div>
+        <div class="step"><div class="k">arraste · zoom</div><h3>Percorra o mapa</h3><p>Arraste para mover e role para aproximar. “Expandir tudo” mostra o mapa completo.</p></div>
+      </div>
+    </section>
+
+    <section id="exemplo">
+      <div class="sec-head">
+        <div class="eyebrow">Exemplos práticos</div>
+        <h2>Cada tópico vem com um caso concreto</h2>
+        <p>Os exemplos usam o mesmo Município fictício do capítulo 4 do manual, então os números conversam entre si do primeiro ao último ramo.</p>
+      </div>
+      <div class="sample">
+        <div class="card">
+          <div class="crumb">3 · Ativo fixo › Depreciação, amortização e exaustão</div>
+          <h3>Depreciação</h3>
+          <div class="exl">Exemplo prático</div>
+          <p>Retroescavadeira de R$ 500 mil, valor residual de 10% (R$ 50 mil) e vida útil de 10 anos. Depreciação linear: (500.000 − 50.000) ÷ 10 = R$ 45.000 por ano, ou R$ 3.750 por mês:</p>
+          <pre>D: VPD de depreciação
+C: (−) Depreciação acumulada – máquinas e equipamentos</pre>
+        </div>
+        <ul>
+          <li>Onde o manual traz números, eles foram mantidos: RCL de R$ 18 milhões, superávit orçamentário de R$ 1.282.300 e resultado patrimonial de R$ 1.000.000.</li>
+          <li>Os demais valores são ilustrativos e servem para estudo.</li>
+          <li>Os lançamentos aparecem em bloco próprio, com as linhas D: e C:.</li>
+          <li>Pontos do manual que divergem da legislação estão listados na aba “Análise do documento”.</li>
+        </ul>
+      </div>
+      <div class="ctas"><a class="btn primary" href="mapa_mental_manual_contabilidade_publica.html">Explorar os 141 tópicos →</a></div>
+    </section>
+
+    <section id="referencia">
+      <div class="sec-head">
+        <div class="eyebrow">Fonte</div>
+        <h2>Referência do manual original</h2>
+      </div>
+      <div class="ref">
+        <p class="cite">MANUAL técnico de contabilidade pública municipal. Coordenação de Elisangela Santos Fernandes, Marcus Vinicius Cunha dos Santos e Sandoval Costa Neto. Brasília, DF: Confederação Nacional de Municípios – CNM, 2026. ISBN 978-85-8418-180-3. Disponível em: <a href="https://www.cnm.org.br" target="_blank" rel="noopener">https://www.cnm.org.br</a>.</p>
+        <p class="note">Este mapa mental é material de estudo independente, elaborado a partir da leitura do manual, e não é uma publicação oficial da CNM. A obra permite reprodução desde que citada a fonte e sem fins comerciais (Lei 9.610/1998). Para aplicação prática, consulte sempre o texto integral.</p>
+      </div>
+    </section>
+
+    <section id="referencias">
+      <div class="sec-head">
+        <div class="eyebrow">Referências</div>
+        <h2>Todas as referências usadas no mapa e nos exemplos</h2>
+        <p>Organizadas pelo papel que tiveram na elaboração: a fonte principal, as fontes conferidas na web, a legislação e as normas citadas nos exemplos e na análise, e a bibliografia do próprio manual, que forma o ramo “Base normativa”.</p>
+      </div>
+
+      <div class="refgroups">
+        <div class="refgroup">
+          <h3>1. Fonte principal <span class="tag">base de todo o mapa</span></h3>
+          <p>Estrutura dos ramos, descrições, páginas de referência, dados do caso simulado (Município fictício de São Benedito do Cerrado/BA) e contas contábeis usadas nos lançamentos.</p>
+          <ul class="reflist">
+            <li>MANUAL técnico de contabilidade pública municipal. Coordenação de Elisangela Santos Fernandes, Marcus Vinicius Cunha dos Santos e Sandoval Costa Neto. Brasília, DF: Confederação Nacional de Municípios – CNM, 2026. ISBN 978-85-8418-180-3. Disponível em: <a href="https://www.cnm.org.br" target="_blank" rel="noopener">https://www.cnm.org.br</a>.</li>
+          </ul>
+        </div>
+
+        <div class="refgroup">
+          <h3>2. Fontes consultadas na web <span class="tag">conferidas em set. 2026</span></h3>
+          <p>Usadas para confirmar dados atualizados que aparecem nos exemplos.</p>
+          <ul class="reflist">
+            <li>BRASIL. Receita Federal. <a href="https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/programas-e-atividades/reforma-consumo/entenda" target="_blank" rel="noopener">Entenda a Reforma Tributária do Consumo</a>.<span class="use">Uso: cronograma de transição do IBS e da CBS (tópico “Reforma Tributária (ISS → IBS)”).</span></li>
+            <li>CONSELHO REGIONAL DE CONTABILIDADE DO ESTADO DE SÃO PAULO (CRCSP). <a href="https://online.crcsp.org.br/portal/noticias/noticia.asp?c=9044" target="_blank" rel="noopener">Reforma tributária: entenda as regras de transição para o IBS e a CBS</a>.<span class="use">Uso: alíquotas de teste de 2026 e redução gradual do ISS de 2029 a 2033.</span></li>
+            <li>BRASIL. Tesouro Transparente. <a href="https://www.tesourotransparente.gov.br/temas/estados-e-municipios/capacidade-de-pagamento-capag" target="_blank" rel="noopener">Capacidade de Pagamento (Capag)</a>.<span class="use">Uso: indicadores da Capag (tópico “Condição financeira e Capag”).</span></li>
+            <li>BRASIL. Tesouro Nacional. <a href="https://www.gov.br/tesouronacional/pt-br/noticias/ministerio-da-fazenda-altera-metodologia-para-calculo-da-analise-da-capacidade-de-pagamento-capag" target="_blank" rel="noopener">Ministério da Fazenda altera metodologia para cálculo da análise da capacidade de pagamento (Capag)</a>.<span class="use">Uso: fórmula de liquidez relativa da Portaria MF 1.583/2023.</span></li>
+          </ul>
+        </div>
+
+        <div class="refgroup">
+          <h3>3. Legislação e normas citadas nos exemplos e na análise</h3>
+          <p>Dispositivos citados com base no conhecimento técnico de contabilidade pública, para fundamentar os exemplos e os pontos de atenção da análise. Com exceção dos itens do grupo 2, não foram conferidos on-line durante a elaboração. Consulte sempre a versão vigente.</p>
+          <ul class="reflist">
+            <li>BRASIL. <a href="https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm" target="_blank" rel="noopener">Constituição da República Federativa do Brasil de 1988</a>.<span class="use">Uso: arts. 70, 74, 159, 165, 167 e 212 (controle, FPM, orçamento, regra de ouro, educação).</span></li>
+            <li>BRASIL. <a href="https://www.planalto.gov.br/ccivil_03/constituicao/emendas/emc/emc132.htm" target="_blank" rel="noopener">Emenda Constitucional 132, de 20 de dezembro de 2023</a>.<span class="use">Uso: Reforma Tributária do consumo (IBS e CBS).</span></li>
+            <li>BRASIL. <a href="https://www.planalto.gov.br/ccivil_03/leis/l4320.htm" target="_blank" rel="noopener">Lei 4.320, de 17 de março de 1964</a>.<span class="use">Uso: arts. 35 (regime da receita e da despesa), 36 (Restos a Pagar), 43 (superávit financeiro), 63 (liquidação) e 102 (Balanço Orçamentário).</span></li>
+            <li>BRASIL. <a href="https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp101.htm" target="_blank" rel="noopener">Lei Complementar 101, de 4 de maio de 2000 (LRF)</a>.<span class="use">Uso: arts. 11, 12, 18 a 23, 42, 44, 48, 51, 54 e 55 (tributos, pessoal, final de mandato, alienação de bens, transparência e prazos).</span></li>
+            <li>BRASIL. <a href="https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp131.htm" target="_blank" rel="noopener">Lei Complementar 131, de 27 de maio de 2009 (Lei da Transparência)</a>.<span class="use">Uso: transparência da execução orçamentária em tempo real.</span></li>
+            <li>BRASIL. <a href="https://www.planalto.gov.br/ccivil_03/_ato2011-2014/2011/lei/l12527.htm" target="_blank" rel="noopener">Lei 12.527, de 18 de novembro de 2011 (Lei de Acesso à Informação)</a>.<span class="use">Uso: art. 11 (prazo de 20 dias, prorrogável por mais 10, para pedidos de informação).</span></li>
+            <li>BRASIL. <a href="https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp141.htm" target="_blank" rel="noopener">Lei Complementar 141, de 13 de janeiro de 2012</a>.<span class="use">Uso: art. 7º (base de cálculo dos 15% em saúde) e ações que contam ou não como ASPS.</span></li>
+            <li>BRASIL. <a href="https://www.planalto.gov.br/ccivil_03/leis/l9394.htm" target="_blank" rel="noopener">Lei 9.394, de 20 de dezembro de 1996 (LDB)</a>.<span class="use">Uso: arts. 70 e 71 (o que conta e o que não conta como MDE, inclusive a merenda).</span></li>
+            <li>BRASIL. <a href="https://www.planalto.gov.br/ccivil_03/_ato2019-2022/2020/lei/l14113.htm" target="_blank" rel="noopener">Lei 14.113, de 25 de dezembro de 2020 (Fundeb)</a>.<span class="use">Uso: art. 26 (mínimo de 70% para remuneração dos profissionais da educação básica).</span></li>
+            <li>BRASIL. <a href="https://www.planalto.gov.br/ccivil_03/_ato2019-2022/2021/lei/l14133.htm" target="_blank" rel="noopener">Lei 14.133, de 1º de abril de 2021 (Licitações e Contratos)</a>.<span class="use">Uso: exemplos de auditoria de conformidade.</span></li>
+            <li>BRASIL. <a href="https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp214.htm" target="_blank" rel="noopener">Lei Complementar 214, de 16 de janeiro de 2025</a>.<span class="use">Uso: regulamentação do IBS, da CBS e do período de transição.</span></li>
+            <li>BRASIL. <a href="https://www.planalto.gov.br/ccivil_03/_ato2019-2022/2020/decreto/d10540.htm" target="_blank" rel="noopener">Decreto 10.540, de 5 de novembro de 2020 (Siafic)</a>.<span class="use">Uso: padrão mínimo do Siafic e divulgação da execução até o primeiro dia útil seguinte.</span></li>
+            <li>BRASIL. Senado Federal. Resolução 40, de 20 de dezembro de 2001.<span class="use">Uso: limite da dívida consolidada líquida (120% da RCL).</span></li>
+            <li>BRASIL. Senado Federal. Resolução 43, de 21 de dezembro de 2001.<span class="use">Uso: limites de operações de crédito (16% da RCL) e do serviço da dívida (11,5%), e regras da ARO.</span></li>
+            <li>BRASIL. Ministério da Fazenda. Portaria Normativa MF 1.583, de 13 de dezembro de 2023.<span class="use">Uso: metodologia da Capag.</span></li>
+            <li>BRASIL. Secretaria do Tesouro Nacional. Portaria STN 448, de 13 de setembro de 2002.<span class="use">Uso: critérios para distinguir material de consumo e material permanente.</span></li>
+            <li>BRASIL. Secretaria do Tesouro Nacional. Portaria STN 548, de 24 de setembro de 2015 (PIPCP).<span class="use">Uso: plano de implantação dos procedimentos contábeis patrimoniais.</span></li>
+            <li>BRASIL. Secretaria do Tesouro Nacional. Portaria STN 710, de 25 de fevereiro de 2021.<span class="use">Uso: classificação da natureza da receita.</span></li>
+            <li>BRASIL. Secretaria do Tesouro Nacional. <em>Manual de Contabilidade Aplicada ao Setor Público (MCASP)</em>. 11. ed.; <em>Plano de Contas Aplicado ao Setor Público (PCASP) Estendido 2026</em>; <em>Manual de Demonstrativos Fiscais (MDF)</em>; <em>Manual para Instrução de Pleitos (MIP)</em>. Portal: <a href="https://www.tesourotransparente.gov.br" target="_blank" rel="noopener">tesourotransparente.gov.br</a>.<span class="use">Uso: contas contábeis, estrutura das DCASP, RREO e RGF, operações de crédito e a observação sobre as Partes do MCASP.</span></li>
+            <li>CONSELHO FEDERAL DE CONTABILIDADE. NBC TSP Estrutura Conceitual (R1); NBC TSP 03 (R1); NBC TSP 08; NBC TSP 11 (R1); NBC TSP 15 (R1); CTSP 02. Portal: <a href="https://cfc.org.br" target="_blank" rel="noopener">cfc.org.br</a>.<span class="use">Uso: provisões e contingências, intangível, apresentação das demonstrações e notas, benefícios a empregados.</span></li>
+            <li>INTOSAI. ISSAI 1200 – Objetivos gerais do auditor independente. INSTITUTO RUI BARBOSA. NBASP 100 – Princípios fundamentais de auditoria do setor público.<span class="use">Uso: objetivo da auditoria financeira, materialidade e tipos de opinião.</span></li>
+            <li>COMMITTEE OF SPONSORING ORGANIZATIONS OF THE TREADWAY COMMISSION (COSO). Internal Control – Integrated Framework, 2013.<span class="use">Uso: componentes do controle interno no exemplo da matriz de riscos.</span></li>
+            <li>BRASIL. Lei 9.610, de 19 de fevereiro de 1998 (Direitos Autorais).<span class="use">Uso: condições de reprodução do manual citadas no aviso de fonte.</span></li>
+          </ul>
+        </div>
+
+        <div class="refgroup">
+          <h3>4. Bibliografia do manual <span class="tag">p. 296–300</span></h3>
+          <p>Referências listadas pelo próprio manual, transcritas como publicadas. Formam o ramo “Base normativa transversal” do mapa e sustentam as descrições dos tópicos.</p>
+          <details open>
+            <summary>Mostrar ou ocultar as referências do manual</summary>
+            <ul class="reflist cols">
+              <li>ABRAHAM, Marcus. <em>Curso de Direito Financeiro Brasileiro</em>. Rio de Janeiro: Forense, 2022 e 2025.</li>
+              <li>ATRICON. <em>Diretrizes de Controle Externo: Marco de Medição de Desempenho (MMD-TC)</em>. Brasília: ATRICON, 2023.</li>
+              <li>BALEEIRO, Aliomar. <em>Direito Tributário Brasileiro</em>. Rio de Janeiro: Forense, 2015.</li>
+              <li>BALEEIRO, Aliomar. <em>Uma Introdução à Ciência das Finanças</em>. Rio de Janeiro: Forense, 2015.</li>
+              <li>BELO HORIZONTE. Prefeitura de Belo Horizonte. <em>Balanço anual: exercício de 2024</em>. Belo Horizonte, 2026.</li>
+              <li>BRASIL. Constituição da República Federativa do Brasil de 1988.</li>
+              <li>BRASIL. Decreto 10.540, de 13 de novembro de 2020.</li>
+              <li>BRASIL. Emenda Constitucional 132, de 2023.</li>
+              <li>BRASIL. Instrução Normativa SFC 03, de 2017.</li>
+              <li>BRASIL. Lei [Complementar] 141, de 13 de janeiro de 2012.</li>
+              <li>BRASIL. Lei 4.320, de 17 de março de 1964.</li>
+              <li>BRASIL. Lei 6.404, de 15 de dezembro de 1976.</li>
+              <li>BRASIL. Lei 9.394, de 20 de dezembro de 1996.</li>
+              <li>BRASIL. Lei Complementar 87, de 1996.</li>
+              <li>BRASIL. Lei Complementar 101, de 4 de maio de 2000.</li>
+              <li>BRASIL. Ministério da Fazenda. Secretaria do Tesouro Nacional. <em>Manual de Demonstrativos Fiscais (MDF)</em>. 14. ed. Brasília: STN, 2023.</li>
+              <li>BRASIL. STN. <em>Demonstrações Contábeis Aplicadas ao Setor Público (DCASP)</em>. Brasília: STN, 2024.</li>
+              <li>BRASIL. STN. IPC 00 – Plano de Contas Aplicado ao Setor Público. Brasília: STN, 2024.</li>
+              <li>BRASIL. STN. IPC 02 – Reconhecimento dos Créditos Tributários pelo Regime de Competência. Brasília: STN, 2013.</li>
+              <li>BRASIL. STN. IPC 03 – Encerramento de Contas Contábeis no PCASP. Brasília: STN, 2017.</li>
+              <li>BRASIL. STN. IPC 04 – Apuração do Superávit/Déficit Financeiro. Brasília: STN.</li>
+              <li>BRASIL. STN. IPC 05 – Metodologia para Elaboração da Demonstração das Variações Patrimoniais. Brasília: STN, 2020.</li>
+              <li>BRASIL. STN. IPC 06 – Metodologia para Elaboração do Balanço Financeiro. Brasília: STN, 2024.</li>
+              <li>BRASIL. STN. IPC 07 – Consolidação na União, Estados, Distrito Federal e Municípios. Brasília: STN.</li>
+              <li>BRASIL. STN. IPC 08 – Demonstração dos Fluxos de Caixa. Brasília: STN.</li>
+              <li>BRASIL. STN. <em>Manual de Contabilidade Aplicada ao Setor Público (MCASP)</em>. 10. ed. e 11. ed. Brasília: STN, 2024.</li>
+              <li>BRASIL. STN. <em>Plano de Contas Aplicado ao Setor Público (PCASP)</em>. Brasília: STN, 2024.</li>
+              <li>BRASIL. STN. <em>PCASP – Estendido – 2026</em>. Brasília: STN, 2026.</li>
+              <li>BRASIL. STN. Portaria STN 548/2015. Brasília: STN, 2015.</li>
+              <li>BRASIL. STN. Portarias e normativos sobre procedimentos contábeis patrimoniais. Brasília: STN, diversos anos.</li>
+              <li>BRASIL. Tribunal de Contas da União. <em>Manual de Auditoria Financeira do TCU</em>. Brasília: TCU, 2016.</li>
+              <li>BRASIL. Tribunal de Contas da União. <em>Referencial Básico de Governança Aplicável à Administração Pública</em>. Brasília: TCU, 2020.</li>
+              <li>CARVALHO FILHO, José dos Santos. <em>Manual de Direito Administrativo</em>. Rio de Janeiro: Atlas, 2021.</li>
+              <li>COMITÊ DE PRONUNCIAMENTOS CONTÁBEIS (CPC). Pronunciamento Técnico CPC 05 (R1). Brasília: CPC, 2010.</li>
+              <li>CONSELHO FEDERAL DE CONTABILIDADE. NBC T 16.6 – Demonstrações Contábeis. Brasília: CFC, 2008.</li>
+              <li>CFC. NBC TSP 03 (2018) e NBC TSP 03 (R1) (2025).</li>
+              <li>CFC. NBC TSP 08 – Ativo Intangível. Brasília: CFC, 2017.</li>
+              <li>CFC. NBC TSP 11 (2018) e NBC TSP 11 (R1) (2025).</li>
+              <li>CFC. NBC TSP 12 (2018) e NBC TSP 12 (R1) (2025).</li>
+              <li>CFC. NBC TSP 15 (2018) e NBC TSP 15 (R1) (2025).</li>
+              <li>CFC. NBC TSP 17 (2018) e NBC TSP 17 (R1) (2025).</li>
+              <li>CFC. NBC TSP Estrutura Conceitual (2016) e Estrutura Conceitual (R1) (2026).</li>
+              <li>CFC. Normas Brasileiras de Contabilidade Aplicadas ao Setor Público (NBC TSP). Brasília: CFC, 2024.</li>
+              <li>CFC. Comunicado Técnico CTSP 02. Brasília: CFC, 2024.</li>
+              <li>CFC. NBC TSP 37 – Ativo Imobilizado. Brasília: CFC, 2025.</li>
+              <li>CONTI, José Maurício. <em>Finanças Públicas: estudos sobre a LRF</em>. São Paulo: Revista dos Tribunais, 2018.</li>
+              <li>CONTI, José Maurício. <em>Levando o direito financeiro a sério: a luta continua</em>. 3. ed. São Paulo: Blucher, 2019.</li>
+              <li>DI PIETRO, Maria Sylvia Zanella. <em>Direito Administrativo</em>. 35. ed. Rio de Janeiro: Forense, 2022.</li>
+              <li>FIGUEIREDO, Carlos Maurício; NÓBREGA, Marcos. <em>Lei de Responsabilidade Fiscal comentada</em>. São Paulo: Atlas, 2021.</li>
+              <li>FILHO, João Eudes B. <em>Contabilidade Aplicada ao Setor Público</em>. Rio de Janeiro: Grupo GEN, 2021.</li>
+              <li>GELBCKE, Ernesto Rubens; SANTOS, Ariovaldo dos; IUDÍCIBUS, Sérgio de; MARTINS, Eliseu. <em>Manual de Contabilidade Societária</em>. 3. ed. São Paulo: Atlas, 2022.</li>
+              <li>GIACOMONI, James. <em>Orçamento Público</em>. 18. ed. e 19. ed. São Paulo: Atlas, 2023.</li>
+              <li>GIUSTI, M. O papel dos Tribunais de Contas na indução de boas práticas de governança. <em>Revista de Administração Pública</em>, 2019.</li>
+              <li>HARADA, Kiyoshi. <em>Direito Financeiro e Tributário</em>. São Paulo: Atlas, 2020; 30. ed., 2021.</li>
+              <li>INSTITUTO RUI BARBOSA (IRB). NBASP 100: Princípios Fundamentais de Auditoria do Setor Público. Belo Horizonte: IRB, 2019.</li>
+              <li>INTERNATIONAL ACCOUNTING STANDARDS BOARD (IASB). IAS 37: Provisions, Contingent Liabilities and Contingent Assets. London: IFRS Foundation, 1998.</li>
+              <li>INTERNATIONAL FEDERATION OF ACCOUNTANTS (IFAC). IPSAS 19: Provisions, Contingent Liabilities and Contingent Assets. New York: IFAC, 2002.</li>
+              <li>IUDÍCIBUS, Sérgio de. <em>Teoria da Contabilidade</em>. São Paulo: Atlas, 2021.</li>
+              <li>KOHAMA, Hellio. <em>Contabilidade Pública: teoria e prática</em>. 17. ed. São Paulo: Atlas, 2022.</li>
+              <li>LUIZ, Wander; PIREZ, João Batista Fortes de Souza; DESCHAMPS, José Ademir. <em>LRF Fácil: Guia Contábil da LRF</em>. 5. ed. Brasília: CFC, 2003.</li>
+              <li>MARION, José Carlos. <em>Contabilidade Pública</em>. São Paulo: Atlas, 2019.</li>
+              <li>MEIRELLES, Hely Lopes. <em>Direito Administrativo Brasileiro</em>. 45. ed. São Paulo: Juspodivm, 2025.</li>
+              <li>PARANÁ. Secretaria da Fazenda. <em>Balanço Geral do Estado do Paraná: exercício de 2025</em>. Curitiba: SefazPR, 2026.</li>
+              <li>SALVADOR (BA). Secretaria Municipal da Fazenda. <em>Balanço Soteropolitano 2024</em>. Salvador: Sefaz, 2025.</li>
+              <li>SILVA, José Afonso da. <em>Curso de Direito Constitucional Positivo</em>. 46. ed. São Paulo: Juspodivm, 2025.</li>
+              <li>SILVA, Lino Martins da. <em>Contabilidade Governamental</em>. 10. ed. São Paulo: Atlas, 2022.</li>
+              <li>TORRES, Ricardo Lobo. <em>Curso de Direito Financeiro e Tributário</em>. 20. ed. Rio de Janeiro: Progresso, 2018.</li>
+            </ul>
+          </details>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>Mapa mental do Manual Técnico de Contabilidade Pública Municipal · material de estudo</span>
+    <a href="mapa_mental_manual_contabilidade_publica.html">Abrir o mapa mental →</a>
+  </footer>
+</div>
+</body>
+</html>

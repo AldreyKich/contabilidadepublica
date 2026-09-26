@@ -1215,6 +1215,7 @@ themeBtn.onclick = () => {
    INÍCIO
    ============================================================ */
 render(); fit();
+if (location.hash === '#analise') showTab('analysisView');
 let rT; window.addEventListener('resize', () => { clearTimeout(rT); rT = setTimeout(fit, 150); });
 </script>
 </body>
